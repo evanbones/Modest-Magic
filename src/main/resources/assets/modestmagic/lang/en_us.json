@@ -1,0 +1,9 @@
+{
+  "block.modestmagic.enchanting_table": "Enchanting Table",
+
+  "recipe.modestmagic.forging": "Enchanting",
+  "emi.category.modestmagic.forging": "Enchanting",
+
+  "modestmagic.subtitles.forge.crackle": "Forge crackles",
+  "gui.recipe_book.toggle_recipes.forgeable": "Toggle Forgeable"
+}

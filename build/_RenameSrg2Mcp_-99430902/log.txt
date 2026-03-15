@@ -1,0 +1,15 @@
+Java Launcher: C:\Users\Bailey\.jdks\temurin-17.0.6\bin\java.exe
+Arguments: '--task, SRG_TO_MCP, --input, C:\Users\Bailey\.gradle\caches\modules-2\files-2.1\curse.maven\selene-499980\5567102\88769d428106abf7c9de9bb8729b291cfa35392\selene-499980-5567102.jar, --output, C:\Users\Bailey\.gradle\caches\forge_gradle\deobf_dependencies\curse\maven\selene-499980\5567102_mapped_parchment_2022.11.27-1.19.2\selene-499980-5567102_mapped_parchment_2022.11.27-1.19.2.jar, --mcp, C:\Users\Bailey\.gradle\caches\parchmentgradle\org\parchmentmc\data\parchment-1.19.2\2022.11.27\parchment-1.19.2-2022.11.27.zip, --strip-signatures'
+Classpath:
+ - C:\Users\Bailey\.gradle\caches\forge_gradle\maven_downloader\net\minecraftforge\installertools\1.3.2\installertools-1.3.2-fatjar.jar
+Working directory: C:\Users\Bailey\projects\Modest Magic\build\_RenameSrg2Mcp_-99430902
+Main class: net.minecraftforge.installertools.ConsoleTool
+====================================
+Task: SRG_TO_MCP
+Input:  C:\Users\Bailey\.gradle\caches\modules-2\files-2.1\curse.maven\selene-499980\5567102\88769d428106abf7c9de9bb8729b291cfa35392\selene-499980-5567102.jar
+Output: C:\Users\Bailey\.gradle\caches\forge_gradle\deobf_dependencies\curse\maven\selene-499980\5567102_mapped_parchment_2022.11.27-1.19.2\selene-499980-5567102_mapped_parchment_2022.11.27-1.19.2.jar
+MCP:    C:\Users\Bailey\.gradle\caches\parchmentgradle\org\parchmentmc\data\parchment-1.19.2\2022.11.27\parchment-1.19.2-2022.11.27.zip
+Loading MCP Data
+Processing ZIP file
+Stripped Manifest of sha digests
+Process complete

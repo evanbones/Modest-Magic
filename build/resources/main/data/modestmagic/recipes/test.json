@@ -1,0 +1,20 @@
+{
+  "type": "modestmagic:enchanting",
+
+  "base": { "item": "minecraft:stick" },
+
+  "ingredients": [
+    { "item": "minecraft:diamond" },
+    { "item": "minecraft:diamond" },
+    { "item": "minecraft:diamond" },
+    { "item": "minecraft:diamond" },
+    { "item": "minecraft:diamond" },
+    { "item": "minecraft:diamond" },
+    { "item": "minecraft:diamond" },
+    { "item": "minecraft:diamond" }
+  ],
+
+  "result": {
+    "item": "minecraft:nether_star"
+  }
+}

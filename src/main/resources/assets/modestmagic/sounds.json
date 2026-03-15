@@ -1,0 +1,11 @@
+{
+  "block.forge.crackle": {
+    "subtitle": "modestmining.subtitles.forge.crackle",
+    "sounds": [
+      {
+        "name": "block.blastfurnace.fire_crackle",
+        "type": "event"
+      }
+    ]
+  }
+}

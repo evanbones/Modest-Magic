@@ -1,0 +1,15 @@
+Java Launcher: C:\Users\Bailey\.jdks\temurin-17.0.6\bin\java.exe
+Arguments: '--task, SRG_TO_MCP, --input, C:\Users\Bailey\.gradle\caches\modules-2\files-2.1\curse.maven\modest-mining-533775\7704901\9abf99eb98325715e7cb8e2ff19dff15123a231f\modest-mining-533775-7704901.jar, --output, C:\Users\Bailey\.gradle\caches\forge_gradle\deobf_dependencies\curse\maven\modest-mining-533775\7704901_mapped_parchment_2022.11.27-1.19.2\modest-mining-533775-7704901_mapped_parchment_2022.11.27-1.19.2.jar, --mcp, C:\Users\Bailey\.gradle\caches\parchmentgradle\org\parchmentmc\data\parchment-1.19.2\2022.11.27\parchment-1.19.2-2022.11.27.zip, --strip-signatures'
+Classpath:
+ - C:\Users\Bailey\.gradle\caches\forge_gradle\maven_downloader\net\minecraftforge\installertools\1.3.2\installertools-1.3.2-fatjar.jar
+Working directory: C:\Users\Bailey\projects\Modest Magic\build\_RenameSrg2Mcp_1668496712
+Main class: net.minecraftforge.installertools.ConsoleTool
+====================================
+Task: SRG_TO_MCP
+Input:  C:\Users\Bailey\.gradle\caches\modules-2\files-2.1\curse.maven\modest-mining-533775\7704901\9abf99eb98325715e7cb8e2ff19dff15123a231f\modest-mining-533775-7704901.jar
+Output: C:\Users\Bailey\.gradle\caches\forge_gradle\deobf_dependencies\curse\maven\modest-mining-533775\7704901_mapped_parchment_2022.11.27-1.19.2\modest-mining-533775-7704901_mapped_parchment_2022.11.27-1.19.2.jar
+MCP:    C:\Users\Bailey\.gradle\caches\parchmentgradle\org\parchmentmc\data\parchment-1.19.2\2022.11.27\parchment-1.19.2-2022.11.27.zip
+Loading MCP Data
+Processing ZIP file
+Stripped Manifest of sha digests
+Process complete
