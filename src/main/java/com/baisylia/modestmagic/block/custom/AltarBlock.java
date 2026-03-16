@@ -28,41 +28,17 @@ public class AltarBlock extends PedestalBlock {
 
     @Override
     public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
-        if(level.isClientSide) return InteractionResult.SUCCESS;
-
         BlockEntity be = level.getBlockEntity(pos);
         if(!(be instanceof AltarBlockEntity table))
-            return InteractionResult.PASS;
-
-        if(state.getValue(AXIS) != Direction.Axis.Y)
-            return InteractionResult.PASS;
-        if(state.getValue(TOP) == false)
             return InteractionResult.PASS;
 
         // Craft
         if(player.isShiftKeyDown()) {
             boolean crafted = table.tryCraft();
-            return crafted ? InteractionResult.CONSUME : InteractionResult.PASS;
+            if(crafted) return InteractionResult.CONSUME;
         }
 
         // Pedestal
-        PedestalBlockEntity pedestal = (PedestalBlockEntity) level.getBlockEntity(pos);
-        ItemStack held = player.getItemInHand(hand);
-
-        if(pedestal.getItem().isEmpty()) {
-            if(!held.isEmpty()) {
-                pedestal.setItem(held.split(1));
-                return InteractionResult.CONSUME;
-            }
-        } else {
-            ItemStack stack = pedestal.getItem();
-            pedestal.clear();
-
-            if(!player.addItem(stack)) {
-                player.drop(stack, false);
-            }
-            return InteractionResult.CONSUME;
-        }
-        return InteractionResult.PASS;
+        return pedestalUse(level, pos, player, hand, state);
     }
 }

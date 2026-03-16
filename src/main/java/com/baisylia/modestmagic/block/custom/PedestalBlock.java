@@ -15,19 +15,23 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.RenderShape;
+import net.minecraft.world.level.block.SimpleWaterloggedBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
+import net.minecraft.world.level.material.FluidState;
+import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.Nullable;
 
-public class PedestalBlock extends BaseEntityBlock {
+public class PedestalBlock extends BaseEntityBlock implements SimpleWaterloggedBlock {
+    public static final BooleanProperty WATERLOGGED = BlockStateProperties.WATERLOGGED;
     public static final BooleanProperty HAS_ITEM = BooleanProperty.create("has_item");
     public static final BooleanProperty TOP = BooleanProperty.create("top");
     public static final BooleanProperty BOTTOM = BooleanProperty.create("bottom");
@@ -39,24 +43,41 @@ public class PedestalBlock extends BaseEntityBlock {
                 .setValue(HAS_ITEM, false)
                 .setValue(TOP, true)
                 .setValue(BOTTOM, true)
-                .setValue(AXIS, Direction.Axis.Y));
+                .setValue(AXIS, Direction.Axis.Y)
+                .setValue(WATERLOGGED, false));
     }
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(HAS_ITEM, TOP, BOTTOM, AXIS);
+        builder.add(HAS_ITEM, TOP, BOTTOM, AXIS, WATERLOGGED);
     }
 
     @Override
     public BlockState getStateForPlacement(BlockPlaceContext context) {
         Direction.Axis axis = context.getClickedFace().getAxis();
 
+        boolean water = context.getLevel()
+                .getFluidState(context.getClickedPos())
+                .getType() == Fluids.WATER;
+
         return defaultBlockState()
-                .setValue(AXIS, axis);
+                .setValue(AXIS, axis)
+                .setValue(WATERLOGGED, water);
+    }
+
+    @Override
+    public FluidState getFluidState(BlockState state) {
+        return state.getValue(WATERLOGGED)
+                ? Fluids.WATER.getSource(false)
+                : super.getFluidState(state);
     }
 
     @Override
     public BlockState updateShape(BlockState state, Direction direction, BlockState neighborState, net.minecraft.world.level.LevelAccessor level, BlockPos pos, BlockPos neighborPos) {
+        if (state.getValue(WATERLOGGED)) {
+            level.scheduleTick(pos, Fluids.WATER, Fluids.WATER.getTickDelay(level));
+        }
+
         Direction.Axis axis = state.getValue(AXIS);
 
         Direction positive = Direction.get(Direction.AxisDirection.POSITIVE, axis);
@@ -144,31 +165,38 @@ public class PedestalBlock extends BaseEntityBlock {
 
     @Override
     public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
-        if(level.isClientSide) return InteractionResult.SUCCESS;
+        return pedestalUse(level, pos, player, hand, state);
+    }
 
-        if(state.getValue(AXIS) != Direction.Axis.Y)
-            return InteractionResult.PASS;
-        if(state.getValue(TOP) == false)
+    protected InteractionResult pedestalUse(Level level, BlockPos pos, Player player, InteractionHand hand, BlockState state) {
+        if(state.getValue(AXIS) != Direction.Axis.Y) return InteractionResult.PASS;
+        if(!state.getValue(TOP)) return InteractionResult.PASS;
+
+        BlockEntity be = level.getBlockEntity(pos);
+        if(!(be instanceof PedestalBlockEntity pedestal))
             return InteractionResult.PASS;
 
-        PedestalBlockEntity pedestal = (PedestalBlockEntity) level.getBlockEntity(pos);
         ItemStack held = player.getItemInHand(hand);
 
         if(pedestal.getItem().isEmpty()) {
-            if(!held.isEmpty()) {
-                pedestal.setItem(held.split(1));
-                return InteractionResult.CONSUME;
-            }
-        } else {
-            ItemStack stack = pedestal.getItem();
-            pedestal.clear();
+            if(held.isEmpty()) return InteractionResult.PASS;
 
-            if(!player.addItem(stack)) {
-                player.drop(stack, false);
+            if(!level.isClientSide) {
+                pedestal.setItem(held.split(1));
             }
-            return InteractionResult.CONSUME;
+            return InteractionResult.sidedSuccess(level.isClientSide);
         }
-        return InteractionResult.PASS;
+        else {
+            if(!level.isClientSide) {
+                ItemStack stack = pedestal.getItem();
+                pedestal.clear();
+
+                if(!player.addItem(stack)) {
+                    player.drop(stack, false);
+                }
+            }
+            return InteractionResult.sidedSuccess(level.isClientSide);
+        }
     }
 
     @Override
