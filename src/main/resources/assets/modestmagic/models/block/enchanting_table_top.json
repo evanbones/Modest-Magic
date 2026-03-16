@@ -1,0 +1,42 @@
+{
+	"format_version": "1.21.6",
+	"credit": "Made with Blockbench",
+	"parent": "block/block",
+	"textures": {
+		"2": "modestmagic:block/enchanting_table_misc",
+		"3": "modestmagic:block/enchanting_table_bottom",
+		"particle": "modestmagic:block/enchanting_table_bottom"
+	},
+	"elements": [
+		{
+			"from": [0, 13, 0],
+			"to": [16, 16, 16],
+			"rotation": {"angle": 0, "axis": "y", "origin": [0, 13, 0]},
+			"faces": {
+				"north": {"uv": [0, 0, 16, 3], "texture": "#3", "cullface": "north"},
+				"east": {"uv": [0, 0, 16, 3], "texture": "#3", "cullface": "east"},
+				"south": {"uv": [0, 0, 16, 3], "texture": "#3", "cullface": "south"},
+				"west": {"uv": [0, 0, 16, 3], "texture": "#3", "cullface": "west"},
+				"up": {"uv": [0, 0, 16, 16], "rotation": 180, "texture": "#3"},
+				"down": {"uv": [0, 0, 16, 16], "texture": "#3", "cullface": "down"}
+			}
+		},
+		{
+			"from": [3, 0, 3],
+			"to": [13, 13, 13],
+			"rotation": {"angle": 0, "axis": "y", "origin": [0, 1, 0]},
+			"faces": {
+				"north": {"uv": [5, 0, 10, 6.5], "texture": "#2"},
+				"east": {"uv": [10, 0, 5, 6.5], "texture": "#2"},
+				"south": {"uv": [5, 0, 10, 6.5], "texture": "#2"},
+				"west": {"uv": [5, 0, 10, 6.5], "texture": "#2"}
+			}
+		}
+	],
+	"display": {
+		"firstperson_righthand": {
+			"rotation": [0, 135, 0],
+			"scale": [0.4, 0.4, 0.4]
+		}
+	}
+}

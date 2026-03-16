@@ -1,5 +1,6 @@
 package com.baisylia.modestmagic.block.entity.custom;
 
+import com.baisylia.modestmagic.block.custom.PedestalBlock;
 import com.baisylia.modestmagic.block.entity.ModBlockEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
@@ -32,15 +33,20 @@ public class PedestalBlockEntity extends BlockEntity {
         this.item = stack;
         setChanged();
 
-        if(level != null)
-            level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
+        if(level != null) {
+            BlockState state = getBlockState();
+            level.setBlockAndUpdate(worldPosition, state.setValue(PedestalBlock.HAS_ITEM, true));
+        }
     }
 
     public void clear() {
         this.item = ItemStack.EMPTY;
         setChanged();
-        if(level != null)
-            level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
+
+        if(level != null) {
+            BlockState state = getBlockState();
+            level.setBlockAndUpdate(worldPosition, state.setValue(PedestalBlock.HAS_ITEM, false));
+        }
     }
 
     @Override

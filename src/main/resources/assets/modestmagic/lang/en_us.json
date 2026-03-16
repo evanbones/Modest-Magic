@@ -1,5 +1,6 @@
 {
-  "block.modestmagic.enchanting_table": "Enchanting Table",
+  "block.modestmagic.enchanting_table": "Altar",
+  "block.modestmagic.pedestal": "Pedestal",
 
   "recipe.modestmagic.forging": "Enchanting",
   "emi.category.modestmagic.forging": "Enchanting",

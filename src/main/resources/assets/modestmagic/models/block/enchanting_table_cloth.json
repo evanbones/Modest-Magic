@@ -6,7 +6,7 @@
 		"2": "modestmagic:block/enchanting_table_misc",
 		"3": "modestmagic:block/enchanting_table_bottom",
 		"5": "modestmagic:block/enchanting_table_top",
-		"particle": "modestmagic:block/enchanting_table_misc"
+		"particle": "modestmagic:block/enchanting_table_top"
 	},
 	"elements": [
 		{
@@ -26,10 +26,10 @@
 			"to": [13, 13, 13],
 			"rotation": {"angle": 0, "axis": "y", "origin": [0, 1, 0]},
 			"faces": {
-				"north": {"uv": [0, 0, 10, 10], "texture": "#2"},
-				"east": {"uv": [10, 0, 0, 10], "texture": "#2"},
-				"south": {"uv": [0, 0, 10, 10], "texture": "#2"},
-				"west": {"uv": [0, 0, 10, 10], "texture": "#2"}
+				"north": {"uv": [0, 11, 5, 16], "texture": "#2"},
+				"east": {"uv": [5, 11, 0, 16], "texture": "#2"},
+				"south": {"uv": [0, 11, 5, 16], "texture": "#2"},
+				"west": {"uv": [0, 11, 5, 16], "texture": "#2"}
 			}
 		},
 		{
@@ -46,8 +46,8 @@
 			"to": [0, 16, 16],
 			"rotation": {"angle": 0, "axis": "y", "origin": [0, 11, 0]},
 			"faces": {
-				"east": {"uv": [0, 10, 16, 15], "texture": "#2"},
-				"west": {"uv": [0, 10, 16, 15], "texture": "#2"}
+				"east": {"uv": [0, 8, 8, 10.5], "texture": "#2"},
+				"west": {"uv": [0, 8, 8, 10.5], "texture": "#2"}
 			}
 		},
 		{
@@ -55,8 +55,8 @@
 			"to": [16, 16, 16],
 			"rotation": {"angle": 0, "axis": "y", "origin": [16, 11, 0]},
 			"faces": {
-				"east": {"uv": [0, 10, 16, 15], "texture": "#2"},
-				"west": {"uv": [0, 10, 16, 15], "texture": "#2"}
+				"east": {"uv": [0, 8, 8, 10.5], "texture": "#2"},
+				"west": {"uv": [0, 8, 8, 10.5], "texture": "#2"}
 			}
 		},
 		{
@@ -64,8 +64,8 @@
 			"to": [16, 16, 0],
 			"rotation": {"angle": 0, "axis": "y", "origin": [0, 11, 0]},
 			"faces": {
-				"north": {"uv": [0, 10, 16, 15], "texture": "#2"},
-				"south": {"uv": [0, 10, 16, 15], "texture": "#2"}
+				"north": {"uv": [0, 8, 8, 10.5], "texture": "#2"},
+				"south": {"uv": [0, 8, 8, 10.5], "texture": "#2"}
 			}
 		},
 		{
@@ -74,7 +74,7 @@
 			"rotation": {"angle": 0, "axis": "y", "origin": [0, 11, 16]},
 			"faces": {
 				"north": {"uv": [0, 10, 16, 15], "texture": "#2"},
-				"south": {"uv": [0, 10, 16, 15], "texture": "#2"}
+				"south": {"uv": [0, 8, 8, 10.5], "texture": "#2"}
 			}
 		}
 	],

@@ -3,18 +3,16 @@
   "category": "misc",
   "key": {
     "O": {
-      "item": "minecraft:obsidian"
-    },
-    "A": {
-      "item": "minecraft:amethyst_shard"
+      "item": "minecraft:stone_bricks"
     }
   },
   "pattern": [
     "OOO",
-    "AOA",
+    " O ",
     "OOO"
   ],
   "result": {
-    "item": "modestmagic:enchanting_table"
+    "item": "modestmagic:pedestal",
+    "count": 7
   }
 }

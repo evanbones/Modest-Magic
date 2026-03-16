@@ -2,20 +2,20 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "#": {
+    "O": {
       "item": "minecraft:obsidian"
     },
-    "B": {
-      "item": "minecraft:book"
+    "A": {
+      "item": "minecraft:amethyst_shard"
     },
-    "D": {
-      "item": "minecraft:diamond"
+    "L": {
+      "item": "minecraft:leather"
     }
   },
   "pattern": [
-    " B ",
-    "D#D",
-    "###"
+    "ALA",
+    " O ",
+    "OOO"
   ],
   "result": {
     "item": "modestmagic:enchanting_table"

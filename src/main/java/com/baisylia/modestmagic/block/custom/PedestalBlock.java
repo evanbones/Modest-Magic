@@ -3,10 +3,13 @@ package com.baisylia.modestmagic.block.custom;
 import com.baisylia.modestmagic.block.entity.ModBlockEntities;
 import com.baisylia.modestmagic.block.entity.custom.PedestalBlockEntity;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.world.Containers;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseEntityBlock;
@@ -14,6 +17,10 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
@@ -21,9 +28,72 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.Nullable;
 
 public class PedestalBlock extends BaseEntityBlock {
+    public static final BooleanProperty HAS_ITEM = BooleanProperty.create("has_item");
+    public static final BooleanProperty TOP = BooleanProperty.create("top");
+    public static final BooleanProperty BOTTOM = BooleanProperty.create("bottom");
+    public static final EnumProperty<Direction.Axis> AXIS = BlockStateProperties.AXIS;
 
     public PedestalBlock(Properties properties) {
         super(properties);
+        this.registerDefaultState(this.stateDefinition.any()
+                .setValue(HAS_ITEM, false)
+                .setValue(TOP, true)
+                .setValue(BOTTOM, true)
+                .setValue(AXIS, Direction.Axis.Y));
+    }
+
+    @Override
+    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
+        builder.add(HAS_ITEM, TOP, BOTTOM, AXIS);
+    }
+
+    @Override
+    public BlockState getStateForPlacement(BlockPlaceContext context) {
+        Direction.Axis axis = context.getClickedFace().getAxis();
+
+        return defaultBlockState()
+                .setValue(AXIS, axis);
+    }
+
+    @Override
+    public BlockState updateShape(BlockState state, Direction direction, BlockState neighborState, net.minecraft.world.level.LevelAccessor level, BlockPos pos, BlockPos neighborPos) {
+        Direction.Axis axis = state.getValue(AXIS);
+
+        Direction positive = Direction.get(Direction.AxisDirection.POSITIVE, axis);
+        Direction negative = Direction.get(Direction.AxisDirection.NEGATIVE, axis);
+
+        BlockState front = level.getBlockState(pos.relative(positive));
+        BlockState back = level.getBlockState(pos.relative(negative));
+
+        boolean connectTop =
+                front.getBlock() instanceof PedestalBlock &&
+                        front.getValue(AXIS) == axis;
+
+        boolean connectBottom =
+                back.getBlock() instanceof PedestalBlock &&
+                        back.getValue(AXIS) == axis;
+
+        boolean newTop = !connectTop;
+        boolean newBottom = !connectBottom;
+
+        BlockState newState = state
+                .setValue(TOP, newTop)
+                .setValue(BOTTOM, newBottom);
+
+        // Drop Item
+        if(state.getValue(TOP) && !newTop && level instanceof Level realLevel) {
+            BlockEntity be = realLevel.getBlockEntity(pos);
+            if(be instanceof PedestalBlockEntity pedestal) {
+                ItemStack stack = pedestal.getItem();
+
+                if(!stack.isEmpty()) {
+                    Containers.dropItemStack(realLevel, pos.getX(), pos.getY() + 1, pos.getZ(), stack);
+                    pedestal.clear();
+                    newState = newState.setValue(HAS_ITEM, false);
+                }
+            }
+        }
+        return newState;
     }
 
     @Nullable
@@ -32,17 +102,54 @@ public class PedestalBlock extends BaseEntityBlock {
         return new PedestalBlockEntity(pPos, pState);
     }
 
-    public VoxelShape getShape(BlockState pState, BlockGetter pLevel, BlockPos pPos, CollisionContext pContext) {
-        VoxelShape shape1 = Block.box(0, 0, 0, 16, 3, 16);
-        VoxelShape shape2 = Block.box(3, 3, 3, 13, 13, 13);
-        VoxelShape shape3 = Block.box(0, 13, 0, 16, 16, 16);
+    private static VoxelShape rotateShape(VoxelShape shape, Direction.Axis axis) {
+        if (axis == Direction.Axis.Y) return shape;
 
-        return Shapes.or(shape1, shape2, shape3);
+        VoxelShape[] buffer = new VoxelShape[]{shape, Shapes.empty()};
+        shape.forAllBoxes((minX, minY, minZ, maxX, maxY, maxZ) -> {
+            if (axis == Direction.Axis.X) {
+                buffer[1] = Shapes.or(buffer[1], Block.box(
+                        minY * 16, minX * 16, minZ * 16,
+                        maxY * 16, maxX * 16, maxZ * 16
+                ));
+            }
+            if (axis == Direction.Axis.Z) {
+                buffer[1] = Shapes.or(buffer[1], Block.box(
+                        minX * 16, minZ * 16, minY * 16,
+                        maxX * 16, maxZ * 16, maxY * 16
+                ));
+            }
+        });
+        return buffer[1];
+    }
+    @Override
+    public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+
+        boolean top = state.getValue(TOP);
+        boolean bottom = state.getValue(BOTTOM);
+        Direction.Axis axis = state.getValue(AXIS);
+
+        VoxelShape column = Block.box(3,0,3,13,16,13);
+
+        VoxelShape topShape = Block.box(0, 13, 0, 16, 16, 16);
+        VoxelShape bottomShape = Block.box(0, 0, 0, 16, 3, 16);
+
+        VoxelShape shape = column;
+
+        if (top) shape = Shapes.or(shape, topShape);
+        if (bottom) shape = Shapes.or(shape, bottomShape);
+
+        return rotateShape(shape, axis);
     }
 
     @Override
     public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
         if(level.isClientSide) return InteractionResult.SUCCESS;
+
+        if(state.getValue(AXIS) != Direction.Axis.Y)
+            return InteractionResult.PASS;
+        if(state.getValue(TOP) == false)
+            return InteractionResult.PASS;
 
         PedestalBlockEntity pedestal = (PedestalBlockEntity) level.getBlockEntity(pos);
         ItemStack held = player.getItemInHand(hand);
@@ -67,5 +174,25 @@ public class PedestalBlock extends BaseEntityBlock {
     @Override
     public RenderShape getRenderShape(BlockState state) {
         return RenderShape.MODEL;
+    }
+
+    @Override
+    public void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean moved) {
+        if(state.getBlock() != newState.getBlock()) {
+            BlockEntity be = level.getBlockEntity(pos);
+
+            if(be instanceof PedestalBlockEntity pedestal) {
+                ItemStack stack = pedestal.getItem();
+
+                if(!stack.isEmpty()) {
+                    Containers.dropItemStack(level,
+                            pos.getX(),
+                            pos.getY(),
+                            pos.getZ(),
+                            stack);
+                }
+            }
+            super.onRemove(state, level, pos, newState, moved);
+        }
     }
 }

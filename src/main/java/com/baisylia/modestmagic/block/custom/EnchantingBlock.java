@@ -3,6 +3,7 @@ package com.baisylia.modestmagic.block.custom;
 import com.baisylia.modestmagic.block.entity.custom.EnchantingBlockEntity;
 import com.baisylia.modestmagic.block.entity.custom.PedestalBlockEntity;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
@@ -35,6 +36,11 @@ public class EnchantingBlock extends PedestalBlock {
 
         BlockEntity be = level.getBlockEntity(pos);
         if(!(be instanceof EnchantingBlockEntity table))
+            return InteractionResult.PASS;
+
+        if(state.getValue(AXIS) != Direction.Axis.Y)
+            return InteractionResult.PASS;
+        if(state.getValue(TOP) == false)
             return InteractionResult.PASS;
 
         // Craft

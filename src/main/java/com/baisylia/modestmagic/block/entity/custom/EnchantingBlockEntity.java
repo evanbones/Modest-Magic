@@ -19,18 +19,7 @@ public class EnchantingBlockEntity extends PedestalBlockEntity {
         super(ModBlockEntities.ENCHANTING_BLOCK_ENTITY.get(), pos, state);
     }
 
-    private static final BlockPos[] PEDESTAL_OFFSETS = {
-            new BlockPos(-2,0,-2),
-            new BlockPos(0,0,-2),
-            new BlockPos(2,0,-2),
-
-            new BlockPos(-2,0,0),
-            new BlockPos(2,0,0),
-
-            new BlockPos(-2,0,2),
-            new BlockPos(0,0,2),
-            new BlockPos(2,0,2)
-    };
+    private static final int PEDESTAL_RANGE = 3;
 
     public boolean tryCraft() {
         if (level == null || level.isClientSide)
@@ -39,30 +28,35 @@ public class EnchantingBlockEntity extends PedestalBlockEntity {
         List<PedestalBlockEntity> pedestals = new ArrayList<>();
         List<ItemStack> items = new ArrayList<>();
 
-        for (BlockPos offset : PEDESTAL_OFFSETS) {
-            BlockEntity be = level.getBlockEntity(worldPosition.offset(offset));
-            if (!(be instanceof PedestalBlockEntity pedestal))
-                return false;
-            if (pedestal.getItem().isEmpty())
-                return false;
-            pedestals.add(pedestal);
-            items.add(pedestal.getItem());
+        // Scan Pedestals
+        for (BlockPos pos : BlockPos.betweenClosed(worldPosition.offset(-PEDESTAL_RANGE, -PEDESTAL_RANGE, -PEDESTAL_RANGE),
+                worldPosition.offset(PEDESTAL_RANGE, PEDESTAL_RANGE, PEDESTAL_RANGE))) {
+            BlockEntity be = level.getBlockEntity(pos);
+
+            if (be instanceof PedestalBlockEntity pedestal && be != this) {
+                ItemStack stack = pedestal.getItem();
+                if (!stack.isEmpty()) {
+                    pedestals.add(pedestal);
+                    items.add(stack);
+                }
+            }
         }
+
+        if (items.isEmpty())
+            return false;
 
         for (EnchantingRecipe recipe : level.getRecipeManager().getAllRecipesFor(ModRecipes.ENCHANTING_TYPE.get())) {
             if (recipe.matches(this.getItem(), items)) {
 
-                // Makey the Thingy
+                // Do Thingy
                 this.setItem(recipe.getResult());
                 for (PedestalBlockEntity pedestal : pedestals)
                     pedestal.clear();
-
                 setChanged();
-                if(level != null)
-                    level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
-
+                level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
 
                 if (level instanceof ServerLevel serverLevel) {
+
                     // Sound
                     serverLevel.playSound(
                             null,
@@ -75,12 +69,12 @@ public class EnchantingBlockEntity extends PedestalBlockEntity {
 
                     // Particles
                     serverLevel.sendParticles(
-                            net.minecraft.core.particles.ParticleTypes.ENCHANT,
+                            ParticleTypes.ENCHANT,
                             worldPosition.getX() + 0.5,
-                            worldPosition.getY() + 1.0,
+                            worldPosition.getY() + 1,
                             worldPosition.getZ() + 0.5,
                             40,
-                            0.5, 0.5, 0.5,
+                            0.5,0.5,0.5,
                             0.01
                     );
                     serverLevel.sendParticles(
@@ -97,12 +91,12 @@ public class EnchantingBlockEntity extends PedestalBlockEntity {
                     for (PedestalBlockEntity pedestal : pedestals) {
                         BlockPos pPos = pedestal.getBlockPos();
                         serverLevel.sendParticles(
-                                net.minecraft.core.particles.ParticleTypes.ENCHANT,
+                                ParticleTypes.ENCHANT,
                                 pPos.getX() + 0.5,
-                                pPos.getY() + 1.0,
+                                pPos.getY() + 1,
                                 pPos.getZ() + 0.5,
                                 20,
-                                0.3, 0.3, 0.3,
+                                0.3,0.3,0.3,
                                 0.1
                         );
                         serverLevel.sendParticles(
@@ -120,14 +114,5 @@ public class EnchantingBlockEntity extends PedestalBlockEntity {
             }
         }
         return false;
-    }
-
-    @Override
-    public void setItem(ItemStack stack) {
-        super.setItem(stack);
-        if(level != null) {
-            setChanged();
-            level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
-        }
     }
 }
