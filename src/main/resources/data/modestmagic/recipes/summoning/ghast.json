@@ -1,0 +1,12 @@
+{
+  "type": "modestmagic:summoning",
+  "base": {
+    "item": "minecraft:diamond"
+  },
+  "ingredients": [
+    { "item": "minecraft:ghast_tear" },
+    { "item": "minecraft:ghast_tear" },
+    { "item": "minecraft:ghast_tear" }
+  ],
+  "result_entity": "minecraft:ghast"
+}

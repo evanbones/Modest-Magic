@@ -1,5 +1,6 @@
-package com.baisylia.modestmagic.recipe;
+package com.baisylia.modestmagic.recipe.custom;
 
+import com.baisylia.modestmagic.recipe.ModRecipes;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import net.minecraft.core.NonNullList;

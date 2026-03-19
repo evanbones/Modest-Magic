@@ -1,0 +1,12 @@
+{
+  "type": "modestmagic:summoning",
+  "base": {
+    "item": "minecraft:diamond"
+  },
+  "ingredients": [
+    { "item": "minecraft:prismarine_crystals" },
+    { "item": "minecraft:prismarine_crystals" },
+    { "item": "minecraft:prismarine_crystals" }
+  ],
+  "result_entity": "minecraft:allay"
+}

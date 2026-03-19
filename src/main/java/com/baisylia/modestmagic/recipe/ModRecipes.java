@@ -1,6 +1,9 @@
 package com.baisylia.modestmagic.recipe;
 
 import com.baisylia.modestmagic.ModestMagic;
+import com.baisylia.modestmagic.recipe.custom.EnchantingRecipe;
+import com.baisylia.modestmagic.recipe.custom.InfusingRecipe;
+import com.baisylia.modestmagic.recipe.custom.SummoningRecipe;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraftforge.eventbus.api.IEventBus;
@@ -28,6 +31,12 @@ public class ModRecipes {
 
     public static final RegistryObject<RecipeSerializer<EnchantingRecipe>> ENCHANTING_SERIALIZER =
             SERIALIZERS.register("enchanting", EnchantingRecipe.Serializer::new);
+
+
+    public static final RegistryObject<RecipeType<SummoningRecipe>> SUMMONING_TYPE =
+            TYPES.register("summoning", () -> new RecipeType<>() {});
+    public static final RegistryObject<RecipeSerializer<SummoningRecipe>> SUMMONING_SERIALIZER =
+            SERIALIZERS.register("summoning", () -> SummoningRecipe.Serializer.INSTANCE);
 
 
 

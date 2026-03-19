@@ -1,18 +1,23 @@
 package com.baisylia.modestmagic.block.entity.custom;
 
 import com.baisylia.modestmagic.block.entity.ModBlockEntities;
-import com.baisylia.modestmagic.recipe.InfusingRecipe;
-import com.baisylia.modestmagic.recipe.EnchantingRecipe;
+import com.baisylia.modestmagic.recipe.custom.InfusingRecipe;
+import com.baisylia.modestmagic.recipe.custom.EnchantingRecipe;
 import com.baisylia.modestmagic.recipe.ModRecipes;
+import com.baisylia.modestmagic.recipe.custom.SummoningRecipe;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.MobSpawnType;
+import net.minecraft.world.entity.SpawnPlacements;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.levelgen.Heightmap;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -86,6 +91,19 @@ public class AltarBlockEntity extends PedestalBlockEntity {
                 if (!appliedAny) return false;
 
                 enchantEffects(pedestals, ParticleTypes.SOUL_FIRE_FLAME);
+                return true;
+            }
+        }
+        for (SummoningRecipe recipe : level.getRecipeManager().getAllRecipesFor(ModRecipes.SUMMONING_TYPE.get())) {
+            if (recipe.matches(this.getItem(), items)) {
+                // Do Thingy
+                if (level instanceof ServerLevel server) {
+                    recipe.getResultEntity().spawn(server, null, null, worldPosition.above(),
+                            MobSpawnType.MOB_SUMMONED, true, true);
+                }
+                this.clearContent();
+
+                enchantEffects(pedestals, ParticleTypes.AMBIENT_ENTITY_EFFECT);
                 return true;
             }
         }
