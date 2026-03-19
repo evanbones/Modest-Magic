@@ -21,15 +21,15 @@ public class AltarRenderer implements BlockEntityRenderer<AltarBlockEntity> {
 
         poseStack.pushPose();
 
-        poseStack.translate(0.5, 1.3, 0.5);
+        poseStack.translate(0.5, 1.4, 0.5);
 
-        float rotation = (enchantingTable.getLevel().getGameTime() + partialTick) * 2;
+        float rotation = ((enchantingTable.getLevel().getGameTime() % 360) + partialTick) * 2f;
         poseStack.mulPose(Vector3f.YP.rotationDegrees(rotation));
-        poseStack.scale(1.5f,1.5f,1.5f);
+        poseStack.scale(0.6f,0.6f,0.6f);
 
         Minecraft.getInstance().getItemRenderer().renderStatic(
                 stack,
-                ItemTransforms.TransformType.GROUND,
+                ItemTransforms.TransformType.FIXED,
                 light,
                 overlay,
                 poseStack,

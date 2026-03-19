@@ -21,15 +21,15 @@ public class PedestalRenderer implements BlockEntityRenderer<PedestalBlockEntity
 
         poseStack.pushPose();
 
-        poseStack.translate(0.5, 1.25, 0.5);
+        poseStack.translate(0.5, 1.35, 0.5);
 
-        float rotation = (pedestal.getLevel().getGameTime() + partialTick) * 2;
+        float rotation = ((pedestal.getLevel().getGameTime() % 360) + partialTick) * 2f;
         poseStack.mulPose(Vector3f.YP.rotationDegrees(rotation));
-        poseStack.scale(1.3f,1.3f,1.3f);
+        poseStack.scale(0.6f,0.6f,0.6f);
 
         Minecraft.getInstance().getItemRenderer().renderStatic(
                 stack,
-                ItemTransforms.TransformType.GROUND,
+                ItemTransforms.TransformType.FIXED,
                 light,
                 overlay,
                 poseStack,
