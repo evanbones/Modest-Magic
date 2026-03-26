@@ -10,15 +10,26 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import org.jetbrains.annotations.Nullable;
 
 public class AltarBlock extends PedestalBlock {
-
+    public static final BooleanProperty POWERED = BlockStateProperties.POWERED;
     public AltarBlock(Properties properties) {
         super(properties);
+        this.registerDefaultState(this.defaultBlockState().setValue(POWERED, false));
+    }
+
+    @Override
+    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
+        super.createBlockStateDefinition(builder);
+        builder.add(POWERED);
     }
 
     @Nullable
@@ -30,16 +41,40 @@ public class AltarBlock extends PedestalBlock {
     @Override
     public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
         BlockEntity be = level.getBlockEntity(pos);
-        if(!(be instanceof AltarBlockEntity table))
+        if (!(be instanceof AltarBlockEntity altar))
             return InteractionResult.PASS;
 
+        // Powered
+        if (state.getValue(POWERED)) {
+            return pedestalUse(level, pos, player, hand, state, ModSounds.ADD_ITEM_ALTAR.get());
+        }
+
         // Craft
-        if(player.isShiftKeyDown()) {
-            boolean crafted = table.tryCraft();
-            if(crafted) return InteractionResult.CONSUME;
+        if (player.isShiftKeyDown()) {
+            boolean crafted = altar.tryCraft();
+            if (crafted) return InteractionResult.CONSUME;
         }
 
         // Pedestal
         return pedestalUse(level, pos, player, hand, state, ModSounds.ADD_ITEM_ALTAR.get());
+    }
+
+    @Override
+    public void neighborChanged(BlockState state, Level level, BlockPos pos, net.minecraft.world.level.block.Block block, BlockPos fromPos, boolean isMoving) {
+        if (level.isClientSide) return;
+
+        boolean isPowered = level.hasNeighborSignal(pos);
+        boolean wasPowered = state.getValue(POWERED);
+
+        if (isPowered && !wasPowered) {
+            BlockEntity be = level.getBlockEntity(pos);
+            if (be instanceof AltarBlockEntity altar) {
+                altar.tryCraft();
+            }
+        }
+
+        if (isPowered != wasPowered) {
+            level.setBlock(pos, state.setValue(POWERED, isPowered), 3);
+        }
     }
 }
