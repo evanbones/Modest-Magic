@@ -1,17 +1,14 @@
 {
   "type": "modestmagic:summoning",
   "base": {
-    "item": "minecraft:diamond"
+    "item": "minecraft:lava_bucket"
   },
   "ingredients": [
     { 
-	  "item": "minecraft:ghast_tear" 
+	  "item": "minecraft:lava_bucket"
 	},
     { 
-	  "item": "minecraft:ghast_tear" 
-	},
-    { 
-	  "item": "minecraft:ghast_tear" 
+	  "item": "minecraft:lava_bucket"
 	}
   ],
   "consume_base": true,

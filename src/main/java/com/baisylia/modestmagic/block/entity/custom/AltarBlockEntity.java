@@ -1,5 +1,6 @@
 package com.baisylia.modestmagic.block.entity.custom;
 
+import com.baisylia.modestmagic.block.custom.AltarBlock;
 import com.baisylia.modestmagic.block.entity.ModBlockEntities;
 import com.baisylia.modestmagic.client.ModSounds;
 import com.baisylia.modestmagic.recipe.custom.InfusingRecipe;
@@ -7,15 +8,18 @@ import com.baisylia.modestmagic.recipe.custom.EnchantingRecipe;
 import com.baisylia.modestmagic.recipe.ModRecipes;
 import com.baisylia.modestmagic.recipe.custom.SummoningRecipe;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.entity.MobSpawnType;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.NotNull;
@@ -60,6 +64,9 @@ public class AltarBlockEntity extends PedestalBlockEntity {
         for (InfusingRecipe recipe : level.getRecipeManager().getAllRecipesFor(ModRecipes.INFUSING_TYPE.get())) {
             if (recipe.matches(this.getItem(), items)) {
                 // Do Thingy
+                spawnItemEntity(this.level, this.getItem().getCraftingRemainingItem(),
+                        this.worldPosition.getX() + 0.5, this.worldPosition.getY() + 1.25, this.worldPosition.getZ() + 0.5,
+                        0, 0, 0);
                 this.setItem(recipe.getResult());
 
                 enchantEffects(pedestals, ParticleTypes.FLAME, ModSounds.ALTAR_ENCHANT.get());
@@ -120,14 +127,23 @@ public class AltarBlockEntity extends PedestalBlockEntity {
 
                 ItemStack stack = this.getItem();
                 if (recipe.shouldConsumeBase()) {
+                    spawnItemEntity(this.level, this.getItem().getCraftingRemainingItem(),
+                            this.worldPosition.getX() + 0.5, this.worldPosition.getY() + 1.25, this.worldPosition.getZ() + 0.5,
+                            0, 0, 0);
                     this.clearContent();
                 }
                 else {
                     int damage = recipe.getDurabilityCost();
                     if (damage > 0 && stack.isDamageableItem()) {
                         if (stack.hurt(damage, level.random, null)) {
+                            spawnItemEntity(this.level, this.getItem().getCraftingRemainingItem(),
+                                    this.worldPosition.getX() + 0.5, this.worldPosition.getY() + 1.25, this.worldPosition.getZ() + 0.5,
+                                    0, 0, 0);
                             this.clearContent();
                         } else {
+                            spawnItemEntity(this.level, this.getItem().getCraftingRemainingItem(),
+                                    this.worldPosition.getX() + 0.5, this.worldPosition.getY() + 1.25, this.worldPosition.getZ() + 0.5,
+                                    0, 0, 0);
                             this.setItem(stack);
                         }
                     }
@@ -140,7 +156,13 @@ public class AltarBlockEntity extends PedestalBlockEntity {
         return false;
     }
     public <T extends ParticleOptions> void enchantEffects(List<PedestalBlockEntity> pedestals, T particle, @NotNull SoundEvent soundEvent) {
-        for (PedestalBlockEntity pedestal : pedestals) pedestal.clear();
+        // Eat Ingredients Nyum Nyum Nyum
+        for (PedestalBlockEntity pedestal : pedestals) {
+            spawnItemEntity(pedestal.getLevel(), pedestal.getItem().getCraftingRemainingItem(),
+                    pedestal.getBlockPos().getX() + 0.5, pedestal.getBlockPos().getY() + 1.25, pedestal.getBlockPos().getZ() + 0.5,
+                    0, 0, 0);
+            pedestal.clear();
+        }
         setChanged();
         level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
 
@@ -185,5 +207,10 @@ public class AltarBlockEntity extends PedestalBlockEntity {
                 0.0, 0.0, 0.0,
                 0.05
         );
+    }
+    public static void spawnItemEntity(Level level, ItemStack stack, double x, double y, double z, double xMotion, double yMotion, double zMotion) {
+        ItemEntity entity = new ItemEntity(level, x, y, z, stack);
+        entity.setDeltaMovement(xMotion, yMotion, zMotion);
+        level.addFreshEntity(entity);
     }
 }
