@@ -1,15 +1,12 @@
 package com.baisylia.modestmagic.item;
 
 import com.baisylia.modestmagic.ModestMagic;
-import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.item.*;
-import net.minecraft.world.item.crafting.RecipeType;
-import net.minecraftforge.common.ForgeSpawnEggItem;
+import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.world.item.Item;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
-import org.jetbrains.annotations.Nullable;
 
 public class ModItems {
 
