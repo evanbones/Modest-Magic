@@ -32,7 +32,7 @@ public class InfusingRecipe implements Recipe<SimpleContainer> {
 
     public boolean matches(ItemStack centerItem, List<ItemStack> pedestalItems) {
 
-        if(!base.test(centerItem))
+        if (!base.test(centerItem))
             return false;
 
         List<ItemStack> inputs = new ArrayList<>(pedestalItems);
@@ -83,6 +83,10 @@ public class InfusingRecipe implements Recipe<SimpleContainer> {
         return ingredients;
     }
 
+    public Ingredient getBase() {
+        return base;
+    }
+
     public static class Serializer implements RecipeSerializer<InfusingRecipe> {
         public static final Serializer INSTANCE = new Serializer();
 
@@ -93,7 +97,7 @@ public class InfusingRecipe implements Recipe<SimpleContainer> {
             Ingredient base = Ingredient.fromJson(json.get("base"));
             NonNullList<Ingredient> ingredients = NonNullList.create();
 
-            for(int i = 0; i < ingredientsJson.size(); i++) {
+            for (int i = 0; i < ingredientsJson.size(); i++) {
                 ingredients.add(Ingredient.fromJson(ingredientsJson.get(i)));
             }
 
@@ -111,7 +115,7 @@ public class InfusingRecipe implements Recipe<SimpleContainer> {
 
             NonNullList<Ingredient> ingredients = NonNullList.withSize(size, Ingredient.EMPTY);
 
-            for(int i = 0; i < size; i++) {
+            for (int i = 0; i < size; i++) {
                 ingredients.set(i, Ingredient.fromNetwork(buf));
             }
 
@@ -126,7 +130,7 @@ public class InfusingRecipe implements Recipe<SimpleContainer> {
 
             buf.writeVarInt(recipe.ingredients.size());
 
-            for(Ingredient ing : recipe.ingredients) {
+            for (Ingredient ing : recipe.ingredients) {
                 ing.toNetwork(buf);
             }
 
