@@ -16,7 +16,5 @@
   "subtitles.modestmagic.block.pedestal.remove_item": "Pedestal empties",
   "subtitles.modestmagic.block.altar.add_item": "Altar fills",
   "subtitles.modestmagic.block.altar.enchant": "Altar enchants",
-  "subtitles.modestmagic.block.altar.summon": "Altar summons",
-
-  "tooltip.modestmagic.any_enchantable_item": "Any Enchantable Item"
+  "subtitles.modestmagic.block.altar.summon": "Altar summons"
 }

@@ -7,13 +7,15 @@ import dev.emi.emi.api.render.EmiTexture;
 import dev.emi.emi.api.stack.EmiIngredient;
 import dev.emi.emi.api.stack.EmiStack;
 import dev.emi.emi.api.widget.WidgetHolder;
-import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraftforge.registries.ForgeRegistries;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -23,11 +25,35 @@ public class EnchantingEmiRecipe implements EmiRecipe {
 
     private final ResourceLocation id;
     private final List<EmiIngredient> inputs;
+    private final EmiIngredient baseIngredient;
     private final EmiStack output;
 
     public EnchantingEmiRecipe(EnchantingRecipe recipe) {
         this.id = recipe.getId();
         this.inputs = recipe.getIngredients().stream().map(EmiIngredient::of).collect(Collectors.toList());
+
+        List<EmiStack> validStacks = new ArrayList<>();
+        for (Item item : ForgeRegistries.ITEMS.getValues()) {
+            ItemStack testStack = new ItemStack(item);
+            if (testStack.isEnchantable()) {
+                boolean isValid = true;
+                for (Enchantment e : recipe.getEnchantments()) {
+                    if (!e.canEnchant(testStack)) {
+                        isValid = false;
+                        break;
+                    }
+                }
+                if (isValid) {
+                    validStacks.add(EmiStack.of(testStack));
+                }
+            }
+        }
+
+        if (validStacks.isEmpty()) {
+            validStacks.add(EmiStack.of(Items.BOOK));
+        }
+
+        this.baseIngredient = EmiIngredient.of(validStacks);
 
         ItemStack book = new ItemStack(Items.ENCHANTED_BOOK);
         Map<Enchantment, Integer> appliedEnchantments = new HashMap<>();
@@ -50,7 +76,10 @@ public class EnchantingEmiRecipe implements EmiRecipe {
 
     @Override
     public List<EmiIngredient> getInputs() {
-        return inputs;
+        List<EmiIngredient> allInputs = new ArrayList<>();
+        allInputs.add(baseIngredient);
+        allInputs.addAll(inputs);
+        return allInputs;
     }
 
     @Override
@@ -65,18 +94,17 @@ public class EnchantingEmiRecipe implements EmiRecipe {
 
     @Override
     public int getDisplayHeight() {
-        return 80;
+        return inputs.size() > 6 ? 100 : 80;
     }
 
     @Override
     public void addWidgets(WidgetHolder widgets) {
         int cx = 35;
-        int cy = 40;
-        int radius = 24;
+        int cy = getDisplayHeight() / 2;
+        int radius = inputs.size() > 6 ? 32 : 24;
 
-        // Empty generic slot in the center with a tooltip since EnchantingRecipe doesn't mandate a base item
-        widgets.addSlot(EmiStack.EMPTY, cx - 9, cy - 9)
-                .appendTooltip(Component.translatable("tooltip.modestmagic.any_enchantable_item"));
+        // Base item cycle slot
+        widgets.addSlot(baseIngredient, cx - 9, cy - 9);
 
         // Pedestal items
         int count = inputs.size();
@@ -84,11 +112,11 @@ public class EnchantingEmiRecipe implements EmiRecipe {
             double angle = (360.0 / count) * i - 90.0;
             int x = ModestMagicEmiPlugin.getX(cx, angle, radius);
             int y = ModestMagicEmiPlugin.getY(cy, angle, radius);
-            widgets.addSlot(inputs.get(i), x - 9, y - 9);
+            widgets.addSlot(inputs.get(i), x - 9, y - 9).drawBack(false);
         }
 
-        // Arrow and enchanted book output
-        widgets.addTexture(EmiTexture.EMPTY_ARROW, 75, cy - 8);
-        widgets.addSlot(output, 110, cy - 9).recipeContext(this);
+        // Arrow and enchanted book
+        widgets.addTexture(EmiTexture.EMPTY_ARROW, cx + radius + 16, cy - 8);
+        widgets.addSlot(output, cx + radius + 51, cy - 9).recipeContext(this);
     }
 }

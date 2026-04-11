@@ -56,14 +56,14 @@ public class InfusingEmiRecipe implements EmiRecipe {
 
     @Override
     public int getDisplayHeight() {
-        return 80;
+        return inputs.size() > 6 ? 100 : 80;
     }
 
     @Override
     public void addWidgets(WidgetHolder widgets) {
         int cx = 35;
-        int cy = 40;
-        int radius = 24;
+        int cy = getDisplayHeight() / 2;
+        int radius = inputs.size() > 6 ? 32 : 24;
 
         // Base item in center
         widgets.addSlot(base, cx - 9, cy - 9);
@@ -74,11 +74,11 @@ public class InfusingEmiRecipe implements EmiRecipe {
             double angle = (360.0 / count) * i - 90.0;
             int x = ModestMagicEmiPlugin.getX(cx, angle, radius);
             int y = ModestMagicEmiPlugin.getY(cy, angle, radius);
-            widgets.addSlot(inputs.get(i + 1), x - 9, y - 9);
+            widgets.addSlot(inputs.get(i + 1), x - 9, y - 9).drawBack(false);
         }
 
         // Arrow and output
-        widgets.addTexture(EmiTexture.EMPTY_ARROW, 75, cy - 8);
-        widgets.addSlot(output, 110, cy - 9).recipeContext(this);
+        widgets.addTexture(EmiTexture.EMPTY_ARROW, cx + radius + 16, cy - 8);
+        widgets.addSlot(output, cx + radius + 51, cy - 9).recipeContext(this);
     }
 }
