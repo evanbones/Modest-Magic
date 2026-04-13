@@ -9,7 +9,10 @@ import com.baisylia.modestmagic.recipe.ModRecipes;
 import com.mojang.logging.LogUtils;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.client.event.TextureStitchEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.server.ServerStartingEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
@@ -61,6 +64,13 @@ public class ModestMagic {
         public static void onClientSetup(FMLClientSetupEvent event) {
             ItemBlockRenderTypes.setRenderLayer(ModBlocks.PEDESTAL.get(), RenderType.cutoutMipped());
             ItemBlockRenderTypes.setRenderLayer(ModBlocks.ALTAR.get(), RenderType.cutoutMipped());
+        }
+
+        @SubscribeEvent
+        public static void onTextureStitch(TextureStitchEvent.Pre event) {
+            if (event.getAtlas().location().equals(InventoryMenu.BLOCK_ATLAS)) {
+                event.addSprite(new ResourceLocation(ModestMagic.MOD_ID, "item/empty_slot_tablet"));
+            }
         }
     }
 }
