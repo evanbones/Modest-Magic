@@ -65,93 +65,102 @@ public class AltarBlockEntity extends PedestalBlockEntity {
         // Infusing Recipe
         for (InfusingRecipe recipe : level.getRecipeManager().getAllRecipesFor(ModRecipes.INFUSING_TYPE.get())) {
             if (recipe.matches(this.getItem(), items)) {
-                // Do Thingy
-                spawnItemEntity(this.level, this.getItem().getCraftingRemainingItem(),
-                        this.worldPosition.getX() + 0.5, this.worldPosition.getY() + 1.25, this.worldPosition.getZ() + 0.5,
-                        0, 0, 0);
-                this.setItem(recipe.getResult());
+                if (!recipe.getResults().isEmpty()) {
+                    // Do Thingy
+                    spawnItemEntity(this.level, this.getItem().getCraftingRemainingItem(),
+                            this.worldPosition.getX() + 0.5, this.worldPosition.getY() + 1.25, this.worldPosition.getZ() + 0.5,
+                            0, 0, 0);
+                    
+                    // Select a random result from the outputs
+                    ItemStack result = recipe.getResults().get(level.random.nextInt(recipe.getResults().size()));
+                    this.setItem(result.copy());
 
-                enchantEffects(pedestals, ParticleTypes.FLAME, ModSounds.ALTAR_ENCHANT.get());
-                return true;
+                    enchantEffects(pedestals, ParticleTypes.FLAME, ModSounds.ALTAR_ENCHANT.get());
+                    return true;
+                }
             }
         }
 
         // Enchanting Recipe
         for (EnchantingRecipe recipe : level.getRecipeManager().getAllRecipesFor(ModRecipes.ENCHANTING_TYPE.get())) {
             if (recipe.matches(items)) {
+                if (!recipe.getEnchantmentPools().isEmpty()) {
+                    Map<Enchantment, Integer> existing = EnchantmentHelper.getEnchantments(this.getItem());
+                    boolean appliedAny = false;
 
-                // Do Thingy
-                Map<Enchantment, Integer> existing = EnchantmentHelper.getEnchantments(this.getItem());
-                boolean appliedAny = false;
+                    // Select a random pool of enchantments
+                    List<Enchantment> pool = recipe.getEnchantmentPools().get(level.random.nextInt(recipe.getEnchantmentPools().size()));
 
-                for (Enchantment enchantment : recipe.getEnchantments()) {
-                    // Incompatibilities
-                    if (!enchantment.canEnchant(this.getItem())) continue;
+                    for (Enchantment enchantment : pool) {
+                        if (!enchantment.canEnchant(this.getItem())) continue;
 
-                    boolean incompatible = existing.keySet().stream().anyMatch(e -> e != enchantment && !e.isCompatibleWith(enchantment));
-                    if (incompatible) continue;
+                        boolean incompatible = existing.keySet().stream().anyMatch(e -> e != enchantment && !e.isCompatibleWith(enchantment));
+                        if (incompatible) continue;
 
-                    // Increment Level
-                    int currentLevel = existing.getOrDefault(enchantment, 0);
-                    int newLevel = Math.min(currentLevel + 1, enchantment.getMaxLevel());
+                        int currentLevel = existing.getOrDefault(enchantment, 0);
+                        int newLevel = Math.min(currentLevel + 1, enchantment.getMaxLevel());
 
-                    if (newLevel > currentLevel) {
-                        existing.put(enchantment, newLevel);
-                        EnchantmentHelper.setEnchantments(existing, this.getItem());
-                        appliedAny = true;
+                        if (newLevel > currentLevel) {
+                            existing.put(enchantment, newLevel);
+                            EnchantmentHelper.setEnchantments(existing, this.getItem());
+                            appliedAny = true;
+                        }
                     }
-                }
-                if (!appliedAny) return false;
+                    if (!appliedAny) return false;
 
-                enchantEffects(pedestals, ParticleTypes.SOUL_FIRE_FLAME, ModSounds.ALTAR_ENCHANT.get());
-                return true;
+                    enchantEffects(pedestals, ParticleTypes.SOUL_FIRE_FLAME, ModSounds.ALTAR_ENCHANT.get());
+                    return true;
+                }
             }
         }
 
         // Summoning Recipe
         for (SummoningRecipe recipe : level.getRecipeManager().getAllRecipesFor(ModRecipes.SUMMONING_TYPE.get())) {
             if (recipe.matches(this.getItem(), items)) {
-                // Do Thingy
-                if (level instanceof ServerLevel server) {
-                    var entity = recipe.getResultEntity().create(server);
-                    if (entity != null) {
-                        if (!recipe.getEntityNbt().isEmpty()) {
-                            CompoundTag nbt = recipe.getEntityNbt().copy();
-                            nbt.remove("Pos");
-                            nbt.remove("Motion");
-                            nbt.remove("Rotation");
-                            entity.load(nbt);
-                        }
-                        entity.moveTo(worldPosition.getX() + 0.5, worldPosition.getY() + 1, worldPosition.getZ() + 0.5, server.random.nextFloat() * 360F, 0);
-                        server.addFreshEntity(entity);
-                    }
-                }
-
-                ItemStack stack = this.getItem();
-                if (recipe.shouldConsumeBase()) {
-                    spawnItemEntity(this.level, this.getItem().getCraftingRemainingItem(),
-                            this.worldPosition.getX() + 0.5, this.worldPosition.getY() + 1.25, this.worldPosition.getZ() + 0.5,
-                            0, 0, 0);
-                    this.clearContent();
-                } else {
-                    int damage = recipe.getDurabilityCost();
-                    if (damage > 0 && stack.isDamageableItem()) {
-                        if (stack.hurt(damage, level.random, null)) {
-                            spawnItemEntity(this.level, this.getItem().getCraftingRemainingItem(),
-                                    this.worldPosition.getX() + 0.5, this.worldPosition.getY() + 1.25, this.worldPosition.getZ() + 0.5,
-                                    0, 0, 0);
-                            this.clearContent();
-                        } else {
-                            spawnItemEntity(this.level, this.getItem().getCraftingRemainingItem(),
-                                    this.worldPosition.getX() + 0.5, this.worldPosition.getY() + 1.25, this.worldPosition.getZ() + 0.5,
-                                    0, 0, 0);
-                            this.setItem(stack);
+                if (!recipe.getOutcomes().isEmpty()) {
+                    // Do Thingy
+                    if (level instanceof ServerLevel server) {
+                        SummoningRecipe.SummonOutcome outcome = recipe.getOutcomes().get(level.random.nextInt(recipe.getOutcomes().size()));
+                        var entity = outcome.entity().create(server);
+                        if (entity != null) {
+                            if (!outcome.nbt().isEmpty()) {
+                                CompoundTag nbt = outcome.nbt().copy();
+                                nbt.remove("Pos");
+                                nbt.remove("Motion");
+                                nbt.remove("Rotation");
+                                entity.load(nbt);
+                            }
+                            entity.moveTo(worldPosition.getX() + 0.5, worldPosition.getY() + 1, worldPosition.getZ() + 0.5, server.random.nextFloat() * 360F, 0);
+                            server.addFreshEntity(entity);
                         }
                     }
-                }
 
-                enchantEffects(pedestals, ParticleTypes.AMBIENT_ENTITY_EFFECT, ModSounds.ALTAR_SUMMON.get());
-                return true;
+                    ItemStack stack = this.getItem();
+                    if (recipe.shouldConsumeBase()) {
+                        spawnItemEntity(this.level, this.getItem().getCraftingRemainingItem(),
+                                this.worldPosition.getX() + 0.5, this.worldPosition.getY() + 1.25, this.worldPosition.getZ() + 0.5,
+                                0, 0, 0);
+                        this.clearContent();
+                    } else {
+                        int damage = recipe.getDurabilityCost();
+                        if (damage > 0 && stack.isDamageableItem()) {
+                            if (stack.hurt(damage, level.random, null)) {
+                                spawnItemEntity(this.level, this.getItem().getCraftingRemainingItem(),
+                                        this.worldPosition.getX() + 0.5, this.worldPosition.getY() + 1.25, this.worldPosition.getZ() + 0.5,
+                                        0, 0, 0);
+                                this.clearContent();
+                            } else {
+                                spawnItemEntity(this.level, this.getItem().getCraftingRemainingItem(),
+                                        this.worldPosition.getX() + 0.5, this.worldPosition.getY() + 1.25, this.worldPosition.getZ() + 0.5,
+                                        0, 0, 0);
+                                this.setItem(stack);
+                            }
+                        }
+                    }
+
+                    enchantEffects(pedestals, ParticleTypes.AMBIENT_ENTITY_EFFECT, ModSounds.ALTAR_SUMMON.get());
+                    return true;
+                }
             }
         }
         return false;
