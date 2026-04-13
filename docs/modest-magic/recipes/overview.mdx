@@ -1,0 +1,21 @@
+---
+title: Overview
+hide_meta: true
+---
+
+Modest Magic uses Minecraft's standard Datapack system for all of its rituals. This means modpack makers and server owners can easily add, remove, or modify rituals by placing JSON files in the `data/modestmagic/recipes/` directory of a datapack.
+
+### Recipe Types
+
+There are three recipe types available, each corresponding to a different ritual type:
+* `modestmagic:infusing`
+* `modestmagic:enchanting`
+* `modestmagic:summoning`
+
+### Common Fields
+Most Modest Magic recipes share a similar structure for defining the required items:
+
+* **`ingredients`**: An array of standard Minecraft ingredients. These are the items that must be placed on the Pedestals. Order does not matter.
+* **`base`** (Infusing & Summoning only): A standard Minecraft ingredient representing the item that must be placed on the Altar itself.
+
+Select a recipe type from the sidebar to see JSON structures and examples!

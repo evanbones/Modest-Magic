@@ -1,0 +1,69 @@
+---
+title: Summoning Recipes
+hide_meta: true
+---
+
+Summoning recipes (`modestmagic:summoning`) are used to spawn entities into the world above the Altar. You can configure them to either consume the Altar's base item or damage it.
+
+## JSON Format
+
+* **`type`**: `"modestmagic:summoning"`
+* **`base`**: The ingredient required on the Altar.
+* **`ingredients`**: An array of ingredients required on the Pedestals.
+* **`consume_base`** (Optional, default `true`): If `true`, the base item is destroyed. If `false`, the base item stays on the Altar.
+* **`durability_taken`** (Optional, default `0`): If `consume_base` is `false`, this dictates how much damage the base item takes per summon.
+* **`result_entity`** (Optional): The namespaced name of a specific entity to spawn (e.g., `"minecraft:zombie"`).
+* **`entity_nbt`** (Optional): Stringified NBT data to apply to the summoned entity.
+* **`outcomes`** (Optional): An array of objects for randomized spawning. Replaces `result_entity` and `entity_nbt`.
+  * Each object in the array should contain `result_entity` and optionally `entity_nbt`.
+
+## Examples
+
+### Basic Single Summon
+This recipe consumes a Bone on the Altar and summons a standard Skeleton.
+
+```json
+{
+  "type": "modestmagic:summoning",
+  "base": { "item": "minecraft:bone" },
+  "ingredients": [
+    { "item": "minecraft:rotten_flesh" }
+  ],
+  "consume_base": true,
+  "result_entity": "minecraft:skeleton"
+}
+```
+
+### Durability Cost with NBT Data
+This recipe uses a diamond sword (which isn't consumed, but takes 10 durability damage) to summon a Zombie wearing a diamond helmet.
+
+```json
+{
+  "type": "modestmagic:summoning",
+  "base": { "item": "minecraft:diamond_sword" },
+  "ingredients": [
+    { "item": "minecraft:rotten_flesh" },
+    { "item": "minecraft:diamond" }
+  ],
+  "consume_base": false,
+  "durability_taken": 10,
+  "result_entity": "minecraft:zombie",
+  "entity_nbt": "{ArmorItems:[{},{},{},{id:\"minecraft:diamond_helmet\",Count:1b}]}"
+}
+```
+
+### Randomized Summon
+This recipe summons *either* a Pig or a Cow randomly.
+```json
+{
+  "type": "modestmagic:summoning",
+  "base": { "item": "minecraft:wheat" },
+  "ingredients": [
+    { "item": "minecraft:apple" }
+  ],
+  "outcomes": [
+    { "result_entity": "minecraft:pig" },
+    { "result_entity": "minecraft:cow" }
+  ]
+}
+```

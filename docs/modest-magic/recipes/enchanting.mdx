@@ -1,0 +1,61 @@
+---
+title: Enchanting Recipes
+hide_meta: true
+---
+
+Enchanting recipes (`modestmagic:enchanting`) apply enchantments to the item currently resting on the Altar.
+
+*Note: Enchanting recipes **do not** specify a `base` item. The Altar will accept any item as long as it is compatible with the enchantments being applied.*
+
+## JSON Format
+
+* **`type`**: `"modestmagic:enchanting"`
+* **`ingredients`**: An array of ingredients required on the Pedestals.
+* **`enchantments`**: An array defining the enchantments to apply.
+
+### The `enchantments` Array
+
+Each entry in the `enchantments` array represents an enchantment pool. The Altar will pick exactly **one** enchantment from each pool to apply to the item.
+* If you want a guaranteed enchantment, provide its ID as a string: `"minecraft:sharpness"`.
+* If you want a randomized choice, provide an array of IDs: `["minecraft:fortune", "minecraft:silk_touch"]`.
+
+## Examples
+
+### Guaranteed Enchantments
+This recipe guarantees that `minecraft:unbreaking` will be added to the item on the Altar.
+
+```json
+{
+  "type": "modestmagic:enchanting",
+  "ingredients": [
+    { "item": "modestmagic:enchantment_tablet" },
+    { "item": "minecraft:obsidian" }
+  ],
+  "enchantments": [
+    "minecraft:unbreaking"
+  ]
+}
+
+```
+
+### Randomized Enchantment Pools
+This recipe will apply **two** enchantments to the item. The first will definitely be `minecraft:efficiency`. The second will be randomly chosen between `minecraft:fortune` and `minecraft:silk_touch`.
+
+```json
+{
+  "type": "modestmagic:enchanting",
+  "ingredients": [
+    { "item": "modestmagic:enchantment_tablet" },
+    { "item": "minecraft:diamond" },
+    { "item": "minecraft:book" }
+  ],
+  "enchantments": [
+    "minecraft:efficiency",
+    [
+      "minecraft:fortune",
+      "minecraft:silk_touch"
+    ]
+  ]
+}
+
+```

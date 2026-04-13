@@ -1,0 +1,58 @@
+---
+title: Infusing
+hide_meta: true
+---
+
+Infusing recipes (`modestmagic:infusing`) replace the `base` item on the Altar with a new item result. You can specify a single exact result, or a list of possible results for the Altar to randomly choose from.
+
+## JSON Format
+
+* **`type`**: `"modestmagic:infusing"`
+* **`base`**: The ingredient required on the Altar.
+* **`ingredients`**: An array of ingredients required on the Pedestals.
+* **`result`** (Optional): A single ItemStack object output.
+* **`results`** (Optional): An array of ItemStack objects. If provided, the ritual will randomly select one item from this list.
+
+## Examples
+
+### Basic Infusion
+This recipe turns a Diamond into a Diamond Block using 4 pieces of Redstone.
+```json
+{
+  "type": "modestmagic:infusing",
+  "base": {
+    "item": "minecraft:diamond"
+  },
+  "ingredients": [
+    { "item": "minecraft:redstone" },
+    { "item": "minecraft:redstone" },
+    { "item": "minecraft:redstone" },
+    { "item": "minecraft:redstone" }
+  ],
+  "result": {
+    "item": "minecraft:diamond_block",
+    "count": 1
+  }
+}
+
+```
+
+### Randomized Infusion
+This recipe consumes an Iron Ingot and randomly outputs either a Gold Ingot or a Copper Ingot.
+
+```json
+{
+  "type": "modestmagic:infusing",
+  "base": {
+    "item": "minecraft:iron_ingot"
+  },
+  "ingredients": [
+    { "item": "minecraft:blaze_powder" }
+  ],
+  "results": [
+    { "item": "minecraft:gold_ingot" },
+    { "item": "minecraft:copper_ingot" }
+  ]
+}
+
+```
