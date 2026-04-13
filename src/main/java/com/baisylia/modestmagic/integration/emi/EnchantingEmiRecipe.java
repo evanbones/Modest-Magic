@@ -1,5 +1,6 @@
 package com.baisylia.modestmagic.integration.emi;
 
+import com.baisylia.modestmagic.block.ModBlocks;
 import com.baisylia.modestmagic.recipe.custom.EnchantingRecipe;
 import dev.emi.emi.api.recipe.EmiRecipe;
 import dev.emi.emi.api.recipe.EmiRecipeCategory;
@@ -106,14 +107,15 @@ public class EnchantingEmiRecipe implements EmiRecipe {
         // Base item cycle slot
         widgets.addSlot(baseIngredient, cx - 9, cy - 9);
 
-        // Pedestal items
-        int count = inputs.size();
-        for (int i = 0; i < count; i++) {
-            double angle = (360.0 / count) * i - 90.0;
-            int x = ModestMagicEmiPlugin.getX(cx, angle, radius);
-            int y = ModestMagicEmiPlugin.getY(cy, angle, radius);
-            widgets.addSlot(inputs.get(i), x - 9, y - 9).drawBack(false);
+        // Rotating Pedestal items
+        RotationState state = new RotationState(cx, cy, radius, inputs.size());
+
+        for (int i = 0; i < inputs.size(); i++) {
+            widgets.add(new RotatingSlotWidget(state, inputs.get(i), i));
         }
+
+        // Pedestal Count slot
+        widgets.addSlot(EmiStack.of(new ItemStack(ModBlocks.PEDESTAL.get(), inputs.size())), getDisplayWidth() - 18, getDisplayHeight() - 18).drawBack(true);
 
         // Arrow and enchanted book
         widgets.addTexture(EmiTexture.EMPTY_ARROW, cx + radius + 16, cy - 8);

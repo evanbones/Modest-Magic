@@ -1,5 +1,6 @@
 package com.baisylia.modestmagic.integration.emi;
 
+import com.baisylia.modestmagic.block.ModBlocks;
 import com.baisylia.modestmagic.recipe.custom.InfusingRecipe;
 import dev.emi.emi.api.recipe.EmiRecipe;
 import dev.emi.emi.api.recipe.EmiRecipeCategory;
@@ -8,6 +9,7 @@ import dev.emi.emi.api.stack.EmiIngredient;
 import dev.emi.emi.api.stack.EmiStack;
 import dev.emi.emi.api.widget.WidgetHolder;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.ItemStack;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -68,14 +70,16 @@ public class InfusingEmiRecipe implements EmiRecipe {
         // Base item in center
         widgets.addSlot(base, cx - 9, cy - 9);
 
-        // Pedestal items in a circle
-        int count = inputs.size() - 1;
-        for (int i = 0; i < count; i++) {
-            double angle = (360.0 / count) * i - 90.0;
-            int x = ModestMagicEmiPlugin.getX(cx, angle, radius);
-            int y = ModestMagicEmiPlugin.getY(cy, angle, radius);
-            widgets.addSlot(inputs.get(i + 1), x - 9, y - 9).drawBack(false);
+        // Rotating Pedestal items
+        List<EmiIngredient> pedestalItems = inputs.subList(1, inputs.size());
+        RotationState state = new RotationState(cx, cy, radius, pedestalItems.size());
+
+        for (int i = 0; i < pedestalItems.size(); i++) {
+            widgets.add(new RotatingSlotWidget(state, pedestalItems.get(i), i));
         }
+
+        // Pedestal Count slot
+        widgets.addSlot(EmiStack.of(new ItemStack(ModBlocks.PEDESTAL.get(), pedestalItems.size())), getDisplayWidth() - 18, getDisplayHeight() - 18).drawBack(true);
 
         // Arrow and output
         widgets.addTexture(EmiTexture.EMPTY_ARROW, cx + radius + 16, cy - 8);

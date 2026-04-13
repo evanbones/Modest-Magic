@@ -1,11 +1,20 @@
 package com.baisylia.modestmagic.block.entity.custom;
 
+import com.baisylia.modestmagic.block.custom.AltarBlock;
 import com.baisylia.modestmagic.block.custom.PedestalBlock;
 import com.baisylia.modestmagic.block.entity.ModBlockEntities;
+import com.baisylia.modestmagic.client.ModSounds;
+import com.baisylia.modestmagic.config.ModestMagicConfig;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.world.*;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.game.ClientGamePacketListener;
+import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.WorldlyContainer;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -13,33 +22,16 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
-import net.minecraft.network.protocol.Packet;
-import net.minecraft.network.protocol.game.ClientGamePacketListener;
-import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.ItemStackHandler;
-import net.minecraft.world.entity.item.ItemEntity;
-import net.minecraft.world.phys.AABB;
-import net.minecraft.sounds.SoundSource;
-import net.minecraft.sounds.SoundEvent;
-import com.baisylia.modestmagic.client.ModSounds;
-import com.baisylia.modestmagic.block.custom.AltarBlock;
-import java.util.List;
 
 import javax.annotation.Nullable;
+import java.util.List;
 
 public class PedestalBlockEntity extends BlockEntity implements WorldlyContainer {
-
-    public PedestalBlockEntity(BlockPos pos, BlockState state) {
-        this(ModBlockEntities.PEDESTAL_BLOCK_ENTITY.get(), pos, state);
-    }
-
-    protected PedestalBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
-        super(type, pos, state);
-    }
 
     private final ItemStackHandler itemHandler = new ItemStackHandler(1) {
         @Override
@@ -84,8 +76,50 @@ public class PedestalBlockEntity extends BlockEntity implements WorldlyContainer
             return remainder;
         }
     };
-
     private LazyOptional<IItemHandler> lazyItemHandler = LazyOptional.empty();
+
+    public PedestalBlockEntity(BlockPos pos, BlockState state) {
+        this(ModBlockEntities.PEDESTAL_BLOCK_ENTITY.get(), pos, state);
+    }
+
+    protected PedestalBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
+        super(type, pos, state);
+    }
+
+    public static void tick(Level level, BlockPos pos, BlockState state, PedestalBlockEntity blockEntity) {
+        if (level.isClientSide) return;
+        if (!blockEntity.isEmpty()) return;
+
+        if (state.hasProperty(PedestalBlock.AXIS) && state.getValue(PedestalBlock.AXIS) != Direction.Axis.Y) return;
+        if (state.hasProperty(PedestalBlock.TOP) && !state.getValue(PedestalBlock.TOP)) return;
+
+        if (ModestMagicConfig.THROW_ITEMS_ON_PEDESTALS.get()) {
+            AABB pickupArea = new AABB(pos.getX(), pos.getY() + 1.0, pos.getZ(),
+                    pos.getX() + 1.0, pos.getY() + 1.5, pos.getZ() + 1.0);
+
+            List<ItemEntity> items = level.getEntitiesOfClass(ItemEntity.class, pickupArea);
+
+            for (ItemEntity itemEntity : items) {
+                ItemStack stack = itemEntity.getItem();
+                if (!stack.isEmpty() && itemEntity.isAlive()) {
+                    blockEntity.setItem(stack.split(1));
+
+                    if (stack.isEmpty()) {
+                        itemEntity.discard();
+                    } else {
+                        itemEntity.setItem(stack);
+                    }
+
+                    SoundEvent sound = state.getBlock() instanceof AltarBlock
+                            ? ModSounds.ADD_ITEM_ALTAR.get()
+                            : ModSounds.ADD_ITEM_PEDESTAL.get();
+                    level.playSound(null, pos, sound, SoundSource.BLOCKS, 1.0f, 1.0f);
+
+                    break;
+                }
+            }
+        }
+    }
 
     @Override
     public void onLoad() {
@@ -105,39 +139,6 @@ public class PedestalBlockEntity extends BlockEntity implements WorldlyContainer
             return lazyItemHandler.cast();
         }
         return super.getCapability(cap, side);
-    }
-
-    public static void tick(Level level, BlockPos pos, BlockState state, PedestalBlockEntity blockEntity) {
-        if (level.isClientSide) return;
-        if (!blockEntity.isEmpty()) return;
-
-        if (state.hasProperty(PedestalBlock.AXIS) && state.getValue(PedestalBlock.AXIS) != Direction.Axis.Y) return;
-        if (state.hasProperty(PedestalBlock.TOP) && !state.getValue(PedestalBlock.TOP)) return;
-
-        AABB pickupArea = new AABB(pos.getX(), pos.getY() + 1.0, pos.getZ(),
-                pos.getX() + 1.0, pos.getY() + 1.5, pos.getZ() + 1.0);
-
-        List<ItemEntity> items = level.getEntitiesOfClass(ItemEntity.class, pickupArea);
-
-        for (ItemEntity itemEntity : items) {
-            ItemStack stack = itemEntity.getItem();
-            if (!stack.isEmpty() && itemEntity.isAlive()) {
-                blockEntity.setItem(stack.split(1));
-
-                if (stack.isEmpty()) {
-                    itemEntity.discard();
-                } else {
-                    itemEntity.setItem(stack);
-                }
-
-                SoundEvent sound = state.getBlock() instanceof AltarBlock
-                        ? ModSounds.ADD_ITEM_ALTAR.get()
-                        : ModSounds.ADD_ITEM_PEDESTAL.get();
-                level.playSound(null, pos, sound, SoundSource.BLOCKS, 1.0f, 1.0f);
-
-                break;
-            }
-        }
     }
 
     public ItemStack getItem() {
