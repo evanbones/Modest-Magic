@@ -16,11 +16,14 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.SimpleWaterloggedBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityTicker;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
@@ -32,8 +35,8 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+
+import javax.annotation.Nullable;
 
 public class PedestalBlock extends BaseEntityBlock implements SimpleWaterloggedBlock {
     public static final BooleanProperty WATERLOGGED = BlockStateProperties.WATERLOGGED;
@@ -50,6 +53,27 @@ public class PedestalBlock extends BaseEntityBlock implements SimpleWaterloggedB
                 .setValue(BOTTOM, true)
                 .setValue(AXIS, Direction.Axis.Y)
                 .setValue(WATERLOGGED, false));
+    }
+
+    private static VoxelShape rotateShape(VoxelShape shape, Direction.Axis axis) {
+        if (axis == Direction.Axis.Y) return shape;
+
+        VoxelShape[] buffer = new VoxelShape[]{shape, Shapes.empty()};
+        shape.forAllBoxes((minX, minY, minZ, maxX, maxY, maxZ) -> {
+            if (axis == Direction.Axis.X) {
+                buffer[1] = Shapes.or(buffer[1], Block.box(
+                        minY * 16, minX * 16, minZ * 16,
+                        maxY * 16, maxX * 16, maxZ * 16
+                ));
+            }
+            if (axis == Direction.Axis.Z) {
+                buffer[1] = Shapes.or(buffer[1], Block.box(
+                        minX * 16, minZ * 16, minY * 16,
+                        maxX * 16, maxZ * 16, maxY * 16
+                ));
+            }
+        });
+        return buffer[1];
     }
 
     @Override
@@ -77,8 +101,15 @@ public class PedestalBlock extends BaseEntityBlock implements SimpleWaterloggedB
                 : super.getFluidState(state);
     }
 
+    @Nullable
     @Override
-    public BlockState updateShape(BlockState state, Direction direction, BlockState neighborState, net.minecraft.world.level.LevelAccessor level, BlockPos pos, BlockPos neighborPos) {
+    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
+        if (level.isClientSide) return null;
+        return createTickerHelper(type, ModBlockEntities.PEDESTAL_BLOCK_ENTITY.get(), PedestalBlockEntity::tick);
+    }
+
+    @Override
+    public BlockState updateShape(BlockState state, Direction direction, BlockState neighborState, LevelAccessor level, BlockPos pos, BlockPos neighborPos) {
         if (state.getValue(WATERLOGGED)) {
             level.scheduleTick(pos, Fluids.WATER, Fluids.WATER.getTickDelay(level));
         }
@@ -150,26 +181,6 @@ public class PedestalBlock extends BaseEntityBlock implements SimpleWaterloggedB
         return new PedestalBlockEntity(pPos, pState);
     }
 
-    private static VoxelShape rotateShape(VoxelShape shape, Direction.Axis axis) {
-        if (axis == Direction.Axis.Y) return shape;
-
-        VoxelShape[] buffer = new VoxelShape[]{shape, Shapes.empty()};
-        shape.forAllBoxes((minX, minY, minZ, maxX, maxY, maxZ) -> {
-            if (axis == Direction.Axis.X) {
-                buffer[1] = Shapes.or(buffer[1], Block.box(
-                        minY * 16, minX * 16, minZ * 16,
-                        maxY * 16, maxX * 16, maxZ * 16
-                ));
-            }
-            if (axis == Direction.Axis.Z) {
-                buffer[1] = Shapes.or(buffer[1], Block.box(
-                        minX * 16, minZ * 16, minY * 16,
-                        maxX * 16, maxZ * 16, maxY * 16
-                ));
-            }
-        });
-        return buffer[1];
-    }
     @Override
     public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
 
@@ -177,7 +188,7 @@ public class PedestalBlock extends BaseEntityBlock implements SimpleWaterloggedB
         boolean bottom = state.getValue(BOTTOM);
         Direction.Axis axis = state.getValue(AXIS);
 
-        VoxelShape column = Block.box(3,0,3,13,16,13);
+        VoxelShape column = Block.box(3, 0, 3, 13, 16, 13);
 
         VoxelShape topShape = Block.box(0, 13, 0, 16, 16, 16);
         VoxelShape bottomShape = Block.box(0, 0, 0, 16, 3, 16);
@@ -195,38 +206,36 @@ public class PedestalBlock extends BaseEntityBlock implements SimpleWaterloggedB
         return pedestalUse(level, pos, player, hand, state, ModSounds.ADD_ITEM_PEDESTAL.get());
     }
 
-    protected InteractionResult pedestalUse(Level level, BlockPos pos, Player player, InteractionHand hand, BlockState state, @NotNull SoundEvent soundEvent) {
-        if(state.getValue(AXIS) != Direction.Axis.Y) return InteractionResult.PASS;
-        if(!state.getValue(TOP)) return InteractionResult.PASS;
+    protected InteractionResult pedestalUse(Level level, BlockPos pos, Player player, InteractionHand hand, BlockState state, SoundEvent soundEvent) {
+        if (state.getValue(AXIS) != Direction.Axis.Y) return InteractionResult.PASS;
+        if (!state.getValue(TOP)) return InteractionResult.PASS;
 
         BlockEntity be = level.getBlockEntity(pos);
-        if(!(be instanceof PedestalBlockEntity pedestal))
+        if (!(be instanceof PedestalBlockEntity pedestal))
             return InteractionResult.PASS;
 
         ItemStack held = player.getItemInHand(hand);
 
-        if(pedestal.getItem().isEmpty()) {
-            if(held.isEmpty()) return InteractionResult.PASS;
+        if (pedestal.getItem().isEmpty()) {
+            if (held.isEmpty()) return InteractionResult.PASS;
 
-            if(!level.isClientSide) {
+            if (!level.isClientSide) {
                 pedestal.setItem(held.split(1));
             }
 
             level.playSound(null, pos, soundEvent, SoundSource.BLOCKS, 1.0f, 1.0f);
-            return InteractionResult.sidedSuccess(level.isClientSide);
-        }
-        else {
-            if(!level.isClientSide) {
+        } else {
+            if (!level.isClientSide) {
                 ItemStack stack = pedestal.getItem();
                 pedestal.clear();
                 level.playSound(null, pos, ModSounds.REMOVE_ITEM_PEDESTAL.get(), SoundSource.BLOCKS, 1.0f, 1.0f);
 
-                if(!player.addItem(stack)) {
+                if (!player.addItem(stack)) {
                     player.drop(stack, false);
                 }
             }
-            return InteractionResult.sidedSuccess(level.isClientSide);
         }
+        return InteractionResult.sidedSuccess(level.isClientSide);
     }
 
     @Override
@@ -236,13 +245,13 @@ public class PedestalBlock extends BaseEntityBlock implements SimpleWaterloggedB
 
     @Override
     public void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean moved) {
-        if(state.getBlock() != newState.getBlock()) {
+        if (state.getBlock() != newState.getBlock()) {
             BlockEntity be = level.getBlockEntity(pos);
 
-            if(be instanceof PedestalBlockEntity pedestal) {
+            if (be instanceof PedestalBlockEntity pedestal) {
                 ItemStack stack = pedestal.getItem();
 
-                if(!stack.isEmpty()) {
+                if (!stack.isEmpty()) {
                     Containers.dropItemStack(level,
                             pos.getX(),
                             pos.getY(),

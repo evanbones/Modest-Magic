@@ -1,20 +1,17 @@
 package com.baisylia.modestmagic.block.entity.custom;
 
-import com.baisylia.modestmagic.block.custom.AltarBlock;
 import com.baisylia.modestmagic.block.entity.ModBlockEntities;
 import com.baisylia.modestmagic.client.ModSounds;
-import com.baisylia.modestmagic.recipe.custom.InfusingRecipe;
-import com.baisylia.modestmagic.recipe.custom.EnchantingRecipe;
 import com.baisylia.modestmagic.recipe.ModRecipes;
+import com.baisylia.modestmagic.recipe.custom.EnchantingRecipe;
+import com.baisylia.modestmagic.recipe.custom.InfusingRecipe;
 import com.baisylia.modestmagic.recipe.custom.SummoningRecipe;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
-import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.Enchantment;
@@ -22,7 +19,6 @@ import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,11 +26,17 @@ import java.util.Map;
 
 public class AltarBlockEntity extends PedestalBlockEntity {
 
+    private static final int PEDESTAL_RANGE = 3;
+
     public AltarBlockEntity(BlockPos pos, BlockState state) {
         super(ModBlockEntities.ALTAR_BLOCK_ENTITY.get(), pos, state);
     }
 
-    private static final int PEDESTAL_RANGE = 3;
+    public static void spawnItemEntity(Level level, ItemStack stack, double x, double y, double z, double xMotion, double yMotion, double zMotion) {
+        ItemEntity entity = new ItemEntity(level, x, y, z, stack);
+        entity.setDeltaMovement(xMotion, yMotion, zMotion);
+        level.addFreshEntity(entity);
+    }
 
     public boolean tryCraft() {
         if (level == null || level.isClientSide)
@@ -131,8 +133,7 @@ public class AltarBlockEntity extends PedestalBlockEntity {
                             this.worldPosition.getX() + 0.5, this.worldPosition.getY() + 1.25, this.worldPosition.getZ() + 0.5,
                             0, 0, 0);
                     this.clearContent();
-                }
-                else {
+                } else {
                     int damage = recipe.getDurabilityCost();
                     if (damage > 0 && stack.isDamageableItem()) {
                         if (stack.hurt(damage, level.random, null)) {
@@ -155,7 +156,8 @@ public class AltarBlockEntity extends PedestalBlockEntity {
         }
         return false;
     }
-    public <T extends ParticleOptions> void enchantEffects(List<PedestalBlockEntity> pedestals, T particle, @NotNull SoundEvent soundEvent) {
+
+    public <T extends ParticleOptions> void enchantEffects(List<PedestalBlockEntity> pedestals, T particle, SoundEvent soundEvent) {
         // Eat Ingredients Nyum Nyum Nyum
         for (PedestalBlockEntity pedestal : pedestals) {
             spawnItemEntity(pedestal.getLevel(), pedestal.getItem().getCraftingRemainingItem(),
@@ -183,7 +185,7 @@ public class AltarBlockEntity extends PedestalBlockEntity {
                     worldPosition.getY() + 1.0,
                     worldPosition.getZ() + 0.5,
                     20,
-                    0.0,0.0,0.0,
+                    0.0, 0.0, 0.0,
                     0.05
             );
             serverLevel.sendParticles(
@@ -192,11 +194,12 @@ public class AltarBlockEntity extends PedestalBlockEntity {
                     worldPosition.getY() + 2,
                     worldPosition.getZ() + 0.5,
                     35,
-                    0.0,0.0,0.0,
+                    0.0, 0.0, 0.0,
                     3.0
             );
         }
     }
+
     public <T extends ParticleOptions> void makeParticles(ServerLevel serverLevel, BlockPos pos, T particle) {
         serverLevel.sendParticles(
                 particle,
@@ -207,10 +210,5 @@ public class AltarBlockEntity extends PedestalBlockEntity {
                 0.0, 0.0, 0.0,
                 0.05
         );
-    }
-    public static void spawnItemEntity(Level level, ItemStack stack, double x, double y, double z, double xMotion, double yMotion, double zMotion) {
-        ItemEntity entity = new ItemEntity(level, x, y, z, stack);
-        entity.setDeltaMovement(xMotion, yMotion, zMotion);
-        level.addFreshEntity(entity);
     }
 }

@@ -1,0 +1,88 @@
+package com.baisylia.modestmagic.integration.emi;
+
+import com.baisylia.modestmagic.block.ModBlocks;
+import com.baisylia.modestmagic.recipe.custom.InfusingRecipe;
+import dev.emi.emi.api.recipe.EmiRecipe;
+import dev.emi.emi.api.recipe.EmiRecipeCategory;
+import dev.emi.emi.api.render.EmiTexture;
+import dev.emi.emi.api.stack.EmiIngredient;
+import dev.emi.emi.api.stack.EmiStack;
+import dev.emi.emi.api.widget.WidgetHolder;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.ItemStack;
+
+import java.util.ArrayList;
+import java.util.List;
+
+public class InfusingEmiRecipe implements EmiRecipe {
+
+    private final ResourceLocation id;
+    private final EmiIngredient base;
+    private final List<EmiIngredient> inputs;
+    private final EmiStack output;
+
+    public InfusingEmiRecipe(InfusingRecipe recipe) {
+        this.id = recipe.getId();
+        this.base = EmiIngredient.of(recipe.getBase());
+        this.output = EmiStack.of(recipe.getResult());
+
+        this.inputs = new ArrayList<>();
+        this.inputs.add(base);
+        recipe.getIngredients().forEach(ing -> this.inputs.add(EmiIngredient.of(ing)));
+    }
+
+    @Override
+    public EmiRecipeCategory getCategory() {
+        return ModestMagicEmiPlugin.INFUSING;
+    }
+
+    @Override
+    public ResourceLocation getId() {
+        return id;
+    }
+
+    @Override
+    public List<EmiIngredient> getInputs() {
+        return inputs;
+    }
+
+    @Override
+    public List<EmiStack> getOutputs() {
+        return List.of(output);
+    }
+
+    @Override
+    public int getDisplayWidth() {
+        return 140;
+    }
+
+    @Override
+    public int getDisplayHeight() {
+        return inputs.size() > 6 ? 100 : 80;
+    }
+
+    @Override
+    public void addWidgets(WidgetHolder widgets) {
+        int cx = 35;
+        int cy = getDisplayHeight() / 2;
+        int radius = inputs.size() > 6 ? 32 : 24;
+
+        // Base item in center
+        widgets.addSlot(base, cx - 9, cy - 9);
+
+        // Rotating Pedestal items
+        List<EmiIngredient> pedestalItems = inputs.subList(1, inputs.size());
+        RotationState state = new RotationState(cx, cy, radius, pedestalItems.size());
+
+        for (int i = 0; i < pedestalItems.size(); i++) {
+            widgets.add(new RotatingSlotWidget(state, pedestalItems.get(i), i));
+        }
+
+        // Pedestal Count slot
+        widgets.addSlot(EmiStack.of(new ItemStack(ModBlocks.PEDESTAL.get(), pedestalItems.size())), getDisplayWidth() - 18, getDisplayHeight() - 18).drawBack(true);
+
+        // Arrow and output
+        widgets.addTexture(EmiTexture.EMPTY_ARROW, cx + radius + 16, cy - 8);
+        widgets.addSlot(output, cx + radius + 51, cy - 9).recipeContext(this);
+    }
+}

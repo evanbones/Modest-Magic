@@ -7,8 +7,10 @@
 
   "recipe.modestmagic.infusing": "Infusing",
   "emi.category.modestmagic.infusing": "Infusing",
-  "recipe.modestmagic.enhancing": "Enhancing",
-  "emi.category.modestmagic.enhancing": "Enhancing",
+  "recipe.modestmagic.enchanting": "Enchanting",
+  "emi.category.modestmagic.enchanting": "Enchanting",
+  "recipe.modestmagic.summoning": "Summoning",
+  "emi.category.modestmagic.summoning": "Summoning",
 
   "subtitles.modestmagic.block.pedestal.add_item": "Pedestal fills",
   "subtitles.modestmagic.block.pedestal.remove_item": "Pedestal empties",

@@ -1,29 +1,39 @@
 package com.baisylia.modestmagic.block.custom;
 
+import com.baisylia.modestmagic.block.entity.ModBlockEntities;
 import com.baisylia.modestmagic.block.entity.custom.AltarBlockEntity;
 import com.baisylia.modestmagic.block.entity.custom.PedestalBlockEntity;
 import com.baisylia.modestmagic.client.ModSounds;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityTicker;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.phys.BlockHitResult;
-import net.minecraft.world.level.block.entity.BlockEntity;
-import org.jetbrains.annotations.Nullable;
+
+import javax.annotation.Nullable;
 
 public class AltarBlock extends PedestalBlock {
     public static final BooleanProperty POWERED = BlockStateProperties.POWERED;
+
     public AltarBlock(Properties properties) {
         super(properties);
         this.registerDefaultState(this.defaultBlockState().setValue(POWERED, false));
+    }
+
+    @Nullable
+    @Override
+    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
+        if (level.isClientSide) return null;
+        return createTickerHelper(type, ModBlockEntities.ALTAR_BLOCK_ENTITY.get(), PedestalBlockEntity::tick);
     }
 
     @Override
@@ -60,7 +70,7 @@ public class AltarBlock extends PedestalBlock {
     }
 
     @Override
-    public void neighborChanged(BlockState state, Level level, BlockPos pos, net.minecraft.world.level.block.Block block, BlockPos fromPos, boolean isMoving) {
+    public void neighborChanged(BlockState state, Level level, BlockPos pos, Block block, BlockPos fromPos, boolean isMoving) {
         if (level.isClientSide) return;
 
         boolean isPowered = level.hasNeighborSignal(pos);
