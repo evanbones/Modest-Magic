@@ -90,7 +90,7 @@ public class SummoningEmiRecipe implements EmiRecipe {
 
         widgets.add(new RotatingLettersWidget(
                 new ResourceLocation("modestmagic", "textures/gui/enchanted_letters.png"),
-                state, cx, cy, radius + 6
+                cx, cy, radius + 6
         ));
 
         widgets.add(new HoveringSlotWidget(base, cx - 9, cy - 9, 0));

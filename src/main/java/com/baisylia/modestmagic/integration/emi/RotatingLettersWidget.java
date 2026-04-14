@@ -9,14 +9,12 @@ import net.minecraft.resources.ResourceLocation;
 
 public class RotatingLettersWidget extends Widget {
     private final ResourceLocation texture;
-    private final RotationState state;
     private final int cx, cy, radius;
     private final int numLetters = 12;
     private final int letterSize = 8;
 
-    public RotatingLettersWidget(ResourceLocation texture, RotationState state, int cx, int cy, int radius) {
+    public RotatingLettersWidget(ResourceLocation texture, int cx, int cy, int radius) {
         this.texture = texture;
-        this.state = state;
         this.cx = cx;
         this.cy = cy;
         this.radius = radius;
@@ -32,7 +30,7 @@ public class RotatingLettersWidget extends Widget {
         RenderSystem.setShaderTexture(0, texture);
         RenderSystem.enableBlend();
 
-        double baseAngle = -state.getAngle();
+        double baseAngle = -((System.currentTimeMillis() % 16000L) / 16000.0) * 360.0;
 
         for (int i = 0; i < numLetters; i++) {
             double angle = baseAngle + (360.0 / numLetters) * i;
