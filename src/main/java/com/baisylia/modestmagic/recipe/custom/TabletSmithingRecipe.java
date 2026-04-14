@@ -108,6 +108,18 @@ public class TabletSmithingRecipe extends UpgradeRecipe {
         return true;
     }
 
+    public Ingredient getBase() {
+        return base;
+    }
+
+    public Ingredient getAddition() {
+        return addition;
+    }
+
+    public NonNullList<Enchantment> getEnchantments() {
+        return enchantments;
+    }
+
     @Override
     public boolean canCraftInDimensions(int width, int height) {
         return width * height >= 2;

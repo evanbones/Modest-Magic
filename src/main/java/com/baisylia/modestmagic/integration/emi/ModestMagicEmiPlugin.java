@@ -6,12 +6,15 @@ import com.baisylia.modestmagic.recipe.ModRecipes;
 import com.baisylia.modestmagic.recipe.custom.EnchantingRecipe;
 import com.baisylia.modestmagic.recipe.custom.InfusingRecipe;
 import com.baisylia.modestmagic.recipe.custom.SummoningRecipe;
+import com.baisylia.modestmagic.recipe.custom.TabletSmithingRecipe;
 import dev.emi.emi.api.EmiEntrypoint;
 import dev.emi.emi.api.EmiPlugin;
 import dev.emi.emi.api.EmiRegistry;
 import dev.emi.emi.api.recipe.EmiRecipeCategory;
 import dev.emi.emi.api.stack.EmiStack;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.RecipeType;
 
 @EmiEntrypoint
 public class ModestMagicEmiPlugin implements EmiPlugin {
@@ -62,6 +65,14 @@ public class ModestMagicEmiPlugin implements EmiPlugin {
 
         for (SummoningRecipe recipe : registry.getRecipeManager().getAllRecipesFor(ModRecipes.SUMMONING_TYPE.get())) {
             registry.addRecipe(new SummoningEmiRecipe(recipe));
+        }
+
+        // fix for our custom EMI smithing recipes
+        for (Recipe<?> recipe : registry.getRecipeManager().getAllRecipesFor(RecipeType.SMITHING)) {
+            if (recipe instanceof TabletSmithingRecipe tabletRecipe) {
+                registry.removeRecipes(tabletRecipe.getId());
+                registry.addRecipe(new TabletSmithingEmiRecipe(tabletRecipe));
+            }
         }
     }
 }

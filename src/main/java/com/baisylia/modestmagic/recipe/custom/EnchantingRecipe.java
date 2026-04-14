@@ -55,6 +55,11 @@ public class EnchantingRecipe implements Recipe<SimpleContainer> {
     }
 
     @Override
+    public boolean isSpecial() {
+        return true;
+    }
+
+    @Override
     public ItemStack getResultItem() {
         return ItemStack.EMPTY;
     }
