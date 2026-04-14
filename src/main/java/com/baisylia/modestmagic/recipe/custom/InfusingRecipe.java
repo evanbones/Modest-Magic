@@ -21,13 +21,13 @@ public class InfusingRecipe implements Recipe<SimpleContainer> {
     private final ResourceLocation id;
     private final NonNullList<Ingredient> ingredients;
     private final Ingredient base;
-    private final ItemStack result;
+    private final List<ItemStack> results;
 
-    public InfusingRecipe(ResourceLocation id, Ingredient base, NonNullList<Ingredient> ingredients, ItemStack result) {
+    public InfusingRecipe(ResourceLocation id, Ingredient base, NonNullList<Ingredient> ingredients, List<ItemStack> results) {
         this.id = id;
         this.base = base;
         this.ingredients = ingredients;
-        this.result = result;
+        this.results = results;
     }
 
     public boolean matches(ItemStack centerItem, List<ItemStack> pedestalItems) {
@@ -36,12 +36,11 @@ public class InfusingRecipe implements Recipe<SimpleContainer> {
             return false;
 
         List<ItemStack> inputs = new ArrayList<>(pedestalItems);
-
         return RecipeMatcher.findMatches(inputs, ingredients) != null;
     }
 
-    public ItemStack getResult() {
-        return result.copy();
+    public List<ItemStack> getResults() {
+        return results;
     }
 
     @Override
@@ -51,7 +50,7 @@ public class InfusingRecipe implements Recipe<SimpleContainer> {
 
     @Override
     public ItemStack assemble(SimpleContainer container) {
-        return result.copy();
+        return results.isEmpty() ? ItemStack.EMPTY : results.get(0).copy();
     }
 
     @Override
@@ -61,7 +60,7 @@ public class InfusingRecipe implements Recipe<SimpleContainer> {
 
     @Override
     public ItemStack getResultItem() {
-        return result;
+        return results.isEmpty() ? ItemStack.EMPTY : results.get(0);
     }
 
     @Override
@@ -101,11 +100,17 @@ public class InfusingRecipe implements Recipe<SimpleContainer> {
                 ingredients.add(Ingredient.fromJson(ingredientsJson.get(i)));
             }
 
-            ItemStack result = ShapedRecipe.itemStackFromJson(
-                    GsonHelper.getAsJsonObject(json, "result")
-            );
+            List<ItemStack> results = new ArrayList<>();
+            if (json.has("results")) {
+                JsonArray arr = GsonHelper.getAsJsonArray(json, "results");
+                for (int i = 0; i < arr.size(); i++) {
+                    results.add(ShapedRecipe.itemStackFromJson(arr.get(i).getAsJsonObject()));
+                }
+            } else if (json.has("result")) {
+                results.add(ShapedRecipe.itemStackFromJson(GsonHelper.getAsJsonObject(json, "result")));
+            }
 
-            return new InfusingRecipe(id, base, ingredients, result);
+            return new InfusingRecipe(id, base, ingredients, results);
         }
 
         @Override
@@ -120,9 +125,14 @@ public class InfusingRecipe implements Recipe<SimpleContainer> {
             }
 
             Ingredient base = Ingredient.fromNetwork(buf);
-            ItemStack result = buf.readItem();
 
-            return new InfusingRecipe(id, base, ingredients, result);
+            int resultsSize = buf.readVarInt();
+            List<ItemStack> results = new ArrayList<>();
+            for (int i = 0; i < resultsSize; i++) {
+                results.add(buf.readItem());
+            }
+
+            return new InfusingRecipe(id, base, ingredients, results);
         }
 
         @Override
@@ -135,7 +145,11 @@ public class InfusingRecipe implements Recipe<SimpleContainer> {
             }
 
             recipe.base.toNetwork(buf);
-            buf.writeItem(recipe.result);
+
+            buf.writeVarInt(recipe.results.size());
+            for (ItemStack stack : recipe.results) {
+                buf.writeItem(stack);
+            }
         }
     }
 }

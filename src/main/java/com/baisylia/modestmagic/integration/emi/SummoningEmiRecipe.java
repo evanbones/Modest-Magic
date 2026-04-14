@@ -25,7 +25,7 @@ public class SummoningEmiRecipe implements EmiRecipe {
     private final ResourceLocation id;
     private final EmiIngredient base;
     private final List<EmiIngredient> inputs;
-    private Entity cachedEntity;
+    private final List<Entity> cachedEntities;
 
     public SummoningEmiRecipe(SummoningRecipe recipe) {
         this.id = recipe.getId();
@@ -35,10 +35,12 @@ public class SummoningEmiRecipe implements EmiRecipe {
         this.inputs.add(base);
         recipe.getIngredients().forEach(ing -> this.inputs.add(EmiIngredient.of(ing)));
 
+        this.cachedEntities = new ArrayList<>();
         if (Minecraft.getInstance().level != null) {
-            this.cachedEntity = recipe.getResultEntity().create(Minecraft.getInstance().level);
-            if (this.cachedEntity != null && !recipe.getEntityNbt().isEmpty()) {
-                this.cachedEntity.load(recipe.getEntityNbt());
+            for (SummoningRecipe.SummonOutcome outcome : recipe.getOutcomes()) {
+                Entity entity = outcome.entity().create(Minecraft.getInstance().level);
+                if (entity != null && !outcome.nbt().isEmpty()) entity.load(outcome.nbt());
+                if (entity != null) cachedEntities.add(entity);
             }
         }
     }
@@ -99,33 +101,35 @@ public class SummoningEmiRecipe implements EmiRecipe {
         int slotY = cy - 24;
 
         widgets.addDrawable(slotX, slotY, 18, 18, (poseStack, mouseX, mouseY, delta) -> {
-            if (cachedEntity instanceof LivingEntity living) {
-                double width = living.getBbWidth();
-                double height = living.getBbHeight();
-                double len = (width + width + height) / 3.0;
+            if (!cachedEntities.isEmpty()) {
+                int index = (int) ((System.currentTimeMillis() / 1500L) % cachedEntities.size());
+                Entity currentEntity = cachedEntities.get(index);
 
-                if (len > 1.05) {
-                    len = (len + Math.sqrt(len)) / 2.0;
+                if (currentEntity instanceof LivingEntity living) {
+                    double width = living.getBbWidth();
+                    double height = living.getBbHeight();
+                    double len = (width + width + height) / 3.0;
+
+                    if (len > 1.05) len = (len + Math.sqrt(len)) / 2.0;
+                    float scale = (float) (1.05 / len * 14.0);
+
+                    int entityX = slotX + 9;
+                    int entityY = slotY + 17;
+
+                    PoseStack modelViewStack = RenderSystem.getModelViewStack();
+                    modelViewStack.pushPose();
+                    modelViewStack.mulPoseMatrix(poseStack.last().pose());
+                    RenderSystem.applyModelViewMatrix();
+
+                    InventoryScreen.renderEntityInInventory(
+                            entityX, entityY, (int) scale,
+                            entityX - mouseX, entityY - mouseY - (scale * 1.5f),
+                            living
+                    );
+
+                    modelViewStack.popPose();
+                    RenderSystem.applyModelViewMatrix();
                 }
-
-                float scale = (float) (1.05 / len * 14.0);
-
-                int entityX = slotX + 9;
-                int entityY = slotY + 17;
-
-                PoseStack modelViewStack = RenderSystem.getModelViewStack();
-                modelViewStack.pushPose();
-                modelViewStack.mulPoseMatrix(poseStack.last().pose());
-                RenderSystem.applyModelViewMatrix();
-
-                InventoryScreen.renderEntityInInventory(
-                        entityX, entityY, (int) scale,
-                        entityX - mouseX, entityY - mouseY - (scale * 1.5f),
-                        living
-                );
-
-                modelViewStack.popPose();
-                RenderSystem.applyModelViewMatrix();
             }
         });
     }

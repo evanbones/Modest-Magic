@@ -1,15 +1,17 @@
 {
   "type": "modestmagic:enchanting",
   "ingredients": [
-    { 
-	  "item": "minecraft:redstone" 
-	},
-    { 
-	  "item": "minecraft:redstone" 
-	}
+    {
+      "item": "minecraft:redstone"
+    },
+    {
+      "item": "minecraft:redstone"
+    }
   ],
   "enchantments": [
-    "minecraft:sharpness",
-    "minecraft:fire_aspect"
+    [
+      "minecraft:sharpness",
+      "minecraft:fire_aspect"
+    ]
   ]
 }

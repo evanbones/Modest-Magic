@@ -19,12 +19,12 @@ public class InfusingEmiRecipe implements EmiRecipe {
     private final ResourceLocation id;
     private final EmiIngredient base;
     private final List<EmiIngredient> inputs;
-    private final EmiStack output;
+    private final List<EmiStack> outputs;
 
     public InfusingEmiRecipe(InfusingRecipe recipe) {
         this.id = recipe.getId();
         this.base = EmiIngredient.of(recipe.getBase());
-        this.output = EmiStack.of(recipe.getResult());
+        this.outputs = recipe.getResults().stream().map(EmiStack::of).toList();
 
         this.inputs = new ArrayList<>();
         this.inputs.add(base);
@@ -48,7 +48,7 @@ public class InfusingEmiRecipe implements EmiRecipe {
 
     @Override
     public List<EmiStack> getOutputs() {
-        return List.of(output);
+        return outputs;
     }
 
     @Override
@@ -81,8 +81,8 @@ public class InfusingEmiRecipe implements EmiRecipe {
         // Pedestal Count slot
         widgets.addSlot(EmiStack.of(new ItemStack(ModBlocks.PEDESTAL.get(), pedestalItems.size())), getDisplayWidth() - 18, getDisplayHeight() - 18).drawBack(true);
 
-        // Arrow and output
+        // Arrow and cycling output
         widgets.addTexture(EmiTexture.EMPTY_ARROW, cx + radius + 16, cy - 8);
-        widgets.addSlot(output, cx + radius + 51, cy - 9).recipeContext(this);
+        widgets.addSlot(EmiIngredient.of(outputs), cx + radius + 51, cy - 9).recipeContext(this);
     }
 }

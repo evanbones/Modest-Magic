@@ -27,7 +27,7 @@ public class EnchantingEmiRecipe implements EmiRecipe {
     private final ResourceLocation id;
     private final List<EmiIngredient> inputs;
     private final EmiIngredient baseIngredient;
-    private final EmiStack output;
+    private final List<EmiStack> outputs;
 
     public EnchantingEmiRecipe(EnchantingRecipe recipe) {
         this.id = recipe.getId();
@@ -37,13 +37,22 @@ public class EnchantingEmiRecipe implements EmiRecipe {
         for (Item item : ForgeRegistries.ITEMS.getValues()) {
             ItemStack testStack = new ItemStack(item);
             if (testStack.isEnchantable()) {
-                boolean isValid = true;
-                for (Enchantment e : recipe.getEnchantments()) {
-                    if (!e.canEnchant(testStack)) {
-                        isValid = false;
+                boolean isValid = false;
+
+                for (List<Enchantment> pool : recipe.getEnchantmentPools()) {
+                    boolean poolValid = true;
+                    for (Enchantment e : pool) {
+                        if (!e.canEnchant(testStack)) {
+                            poolValid = false;
+                            break;
+                        }
+                    }
+                    if (poolValid) {
+                        isValid = true;
                         break;
                     }
                 }
+
                 if (isValid) {
                     validStacks.add(EmiStack.of(testStack));
                 }
@@ -56,13 +65,14 @@ public class EnchantingEmiRecipe implements EmiRecipe {
 
         this.baseIngredient = EmiIngredient.of(validStacks);
 
-        ItemStack book = new ItemStack(Items.ENCHANTED_BOOK);
-        Map<Enchantment, Integer> appliedEnchantments = new HashMap<>();
-        for (Enchantment e : recipe.getEnchantments()) {
-            appliedEnchantments.put(e, 1);
+        this.outputs = new ArrayList<>();
+        for (List<Enchantment> pool : recipe.getEnchantmentPools()) {
+            ItemStack book = new ItemStack(Items.ENCHANTED_BOOK);
+            Map<Enchantment, Integer> appliedEnchantments = new HashMap<>();
+            for (Enchantment e : pool) appliedEnchantments.put(e, 1);
+            EnchantmentHelper.setEnchantments(appliedEnchantments, book);
+            this.outputs.add(EmiStack.of(book));
         }
-        EnchantmentHelper.setEnchantments(appliedEnchantments, book);
-        this.output = EmiStack.of(book);
     }
 
     @Override
@@ -85,7 +95,7 @@ public class EnchantingEmiRecipe implements EmiRecipe {
 
     @Override
     public List<EmiStack> getOutputs() {
-        return List.of(output);
+        return outputs;
     }
 
     @Override
@@ -117,8 +127,8 @@ public class EnchantingEmiRecipe implements EmiRecipe {
         // Pedestal Count slot
         widgets.addSlot(EmiStack.of(new ItemStack(ModBlocks.PEDESTAL.get(), inputs.size())), getDisplayWidth() - 18, getDisplayHeight() - 18).drawBack(true);
 
-        // Arrow and enchanted book
+        // Arrow and cycling enchanted book
         widgets.addTexture(EmiTexture.EMPTY_ARROW, cx + radius + 16, cy - 8);
-        widgets.addSlot(output, cx + radius + 51, cy - 9).recipeContext(this);
+        widgets.addSlot(EmiIngredient.of(outputs), cx + radius + 51, cy - 9).recipeContext(this);
     }
 }

@@ -4,6 +4,7 @@ import com.baisylia.modestmagic.ModestMagic;
 import com.baisylia.modestmagic.recipe.custom.EnchantingRecipe;
 import com.baisylia.modestmagic.recipe.custom.InfusingRecipe;
 import com.baisylia.modestmagic.recipe.custom.SummoningRecipe;
+import com.baisylia.modestmagic.recipe.custom.TabletSmithingRecipe;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraftforge.eventbus.api.IEventBus;
@@ -39,6 +40,8 @@ public class ModRecipes {
             SERIALIZERS.register("summoning", () -> SummoningRecipe.Serializer.INSTANCE);
 
 
+    public static final RegistryObject<RecipeSerializer<TabletSmithingRecipe>> TABLET_SMITHING_SERIALIZER =
+            SERIALIZERS.register("tablet_smithing", () -> TabletSmithingRecipe.Serializer.INSTANCE);
 
     public static void register(IEventBus eventBus) {
         TYPES.register(eventBus);
