@@ -12,7 +12,6 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraftforge.registries.ForgeRegistries;
@@ -36,36 +35,43 @@ public class TabletSmithingEmiRecipe implements EmiRecipe {
         List<EmiStack> validBases = new ArrayList<>();
         List<EmiStack> validOutputs = new ArrayList<>();
 
-        Ingredient recipeBase = recipe.getBase();
-        boolean isBaseEmpty = recipeBase == null || recipeBase.isEmpty();
+        ItemStack[] baseItems = recipe.getBase().getItems();
+        List<ItemStack> testStacks = new ArrayList<>();
 
-        for (Item item : ForgeRegistries.ITEMS.getValues()) {
-            ItemStack testStack = new ItemStack(item);
+        if (baseItems.length == 0) {
+            for (Item item : ForgeRegistries.ITEMS) {
+                testStacks.add(new ItemStack(item));
+            }
+        } else {
+            testStacks.addAll(List.of(baseItems));
+        }
 
-            if (isBaseEmpty ? testStack.isEnchantable() : recipeBase.test(testStack)) {
-                boolean isValid = false;
+        for (ItemStack baseStack : testStacks) {
+            boolean isValid = false;
 
+            for (Enchantment e : recipe.getEnchantments()) {
+                if (e.canEnchant(baseStack) || baseStack.is(Items.BOOK)) {
+                    isValid = true;
+                    break;
+                }
+            }
+
+            if (isValid) {
+                validBases.add(EmiStack.of(baseStack));
+
+                ItemStack outStack = baseStack.copy();
+                if (outStack.getItem() == Items.BOOK) {
+                    outStack = new ItemStack(Items.ENCHANTED_BOOK);
+                }
+
+                Map<Enchantment, Integer> map = new HashMap<>();
                 for (Enchantment e : recipe.getEnchantments()) {
-                    if (e.canEnchant(testStack)) {
-                        isValid = true;
-                        break;
+                    if (e.canEnchant(baseStack) || baseStack.is(Items.BOOK)) {
+                        map.put(e, 1);
                     }
                 }
-
-                if (isValid) {
-                    validBases.add(EmiStack.of(testStack));
-
-                    ItemStack outStack = testStack.copy();
-                    Map<Enchantment, Integer> map = new HashMap<>();
-
-                    for (Enchantment e : recipe.getEnchantments()) {
-                        if (e.canEnchant(outStack)) {
-                            map.put(e, 1);
-                        }
-                    }
-                    EnchantmentHelper.setEnchantments(map, outStack);
-                    validOutputs.add(EmiStack.of(outStack));
-                }
+                EnchantmentHelper.setEnchantments(map, outStack);
+                validOutputs.add(EmiStack.of(outStack));
             }
         }
 
@@ -104,7 +110,7 @@ public class TabletSmithingEmiRecipe implements EmiRecipe {
 
     @Override
     public int getDisplayWidth() {
-        return 112;
+        return 125;
     }
 
     @Override
@@ -115,8 +121,9 @@ public class TabletSmithingEmiRecipe implements EmiRecipe {
     @Override
     public void addWidgets(WidgetHolder widgets) {
         widgets.addSlot(base, 0, 0);
-        widgets.addSlot(addition, 18, 0);
-        widgets.addTexture(EmiTexture.EMPTY_ARROW, 44, 1);
-        widgets.addSlot(EmiIngredient.of(outputs), 76, 0).recipeContext(this);
+        widgets.addTexture(EmiTexture.PLUS, 27, 3);
+        widgets.addSlot(addition, 49, 0);
+        widgets.addTexture(EmiTexture.EMPTY_ARROW, 76, 1);
+        widgets.addSlot(EmiIngredient.of(outputs), 107, 0).recipeContext(this);
     }
 }
