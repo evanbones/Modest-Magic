@@ -61,6 +61,11 @@ public class SummoningRecipe implements Recipe<SimpleContainer> {
     }
 
     @Override
+    public boolean isSpecial() {
+        return true;
+    }
+
+    @Override
     public boolean matches(SimpleContainer container, Level level) {
         return false;
     }
