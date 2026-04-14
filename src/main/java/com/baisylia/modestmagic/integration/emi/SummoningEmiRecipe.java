@@ -84,11 +84,16 @@ public class SummoningEmiRecipe implements EmiRecipe {
         int cy = getDisplayHeight() / 2;
         int radius = inputs.size() > 6 ? 32 : 24;
 
-        widgets.add(new HoveringSlotWidget(base, cx - 9, cy - 9, 0));
-
         // Rotating Pedestal items
         List<EmiIngredient> pedestalItems = inputs.subList(1, inputs.size());
         RotationState state = new RotationState(cx, cy, radius, pedestalItems.size());
+
+        widgets.add(new RotatingLettersWidget(
+                new ResourceLocation("modestmagic", "textures/gui/enchanted_letters.png"),
+                state, cx, cy, radius + 6
+        ));
+
+        widgets.add(new HoveringSlotWidget(base, cx - 9, cy - 9, 0));
 
         for (int i = 0; i < pedestalItems.size(); i++) {
             widgets.add(new RotatingSlotWidget(state, pedestalItems.get(i), i + 1));
