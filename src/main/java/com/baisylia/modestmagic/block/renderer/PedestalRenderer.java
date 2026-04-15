@@ -7,6 +7,7 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.client.renderer.block.model.ItemTransforms;
+import net.minecraft.core.BlockPos;
 import net.minecraft.world.item.ItemStack;
 import com.mojang.math.Vector3f;
 
@@ -21,7 +22,10 @@ public class PedestalRenderer implements BlockEntityRenderer<PedestalBlockEntity
 
         poseStack.pushPose();
 
-        poseStack.translate(0.5, 1.35, 0.5);
+        BlockPos pos = pedestal.getBlockPos();
+        float hover = (float) Math.sin((pedestal.getLevel().getGameTime() + partialTick) / 10.0F + (pos.getX() + pos.getY() + pos.getZ())) * 0.1F;
+
+        poseStack.translate(0.5D, 1.35D + hover, 0.5D);
 
         float rotation = ((pedestal.getLevel().getGameTime() % 360) + partialTick) * 2f;
         poseStack.mulPose(Vector3f.YP.rotationDegrees(rotation));

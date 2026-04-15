@@ -16,6 +16,7 @@ import java.util.List;
 
 public class InfusingEmiRecipe implements EmiRecipe {
 
+    private static final ResourceLocation BACKGROUND = new ResourceLocation("modestmagic", "textures/gui/emi_background.png");
     private final ResourceLocation id;
     private final EmiIngredient base;
     private final List<EmiIngredient> inputs;
@@ -63,19 +64,25 @@ public class InfusingEmiRecipe implements EmiRecipe {
 
     @Override
     public void addWidgets(WidgetHolder widgets) {
+        widgets.addTexture(BACKGROUND, 0, 0, getDisplayWidth(), getDisplayHeight(), 0, 0);
+
         int cx = 35;
         int cy = getDisplayHeight() / 2;
         int radius = inputs.size() > 6 ? 32 : 24;
-
-        // Base item in center
-        widgets.addSlot(base, cx - 9, cy - 9);
 
         // Rotating Pedestal items
         List<EmiIngredient> pedestalItems = inputs.subList(1, inputs.size());
         RotationState state = new RotationState(cx, cy, radius, pedestalItems.size());
 
+        widgets.add(new RotatingLettersWidget(
+                new ResourceLocation("modestmagic", "textures/gui/enchanted_letters.png"),
+                cx, cy, radius + 6
+        ));
+
+        widgets.add(new HoveringSlotWidget(base, cx - 9, cy - 9, 0));
+
         for (int i = 0; i < pedestalItems.size(); i++) {
-            widgets.add(new RotatingSlotWidget(state, pedestalItems.get(i), i));
+            widgets.add(new RotatingSlotWidget(state, pedestalItems.get(i), i + 1));
         }
 
         // Pedestal Count slot
@@ -83,6 +90,6 @@ public class InfusingEmiRecipe implements EmiRecipe {
 
         // Arrow and cycling output
         widgets.addTexture(EmiTexture.EMPTY_ARROW, cx + radius + 16, cy - 8);
-        widgets.addSlot(EmiIngredient.of(outputs), cx + radius + 51, cy - 9).recipeContext(this);
+        widgets.add(new HoveringSlotWidget(EmiIngredient.of(outputs), cx + radius + 51, cy - 9, 2)).recipeContext(this);
     }
 }

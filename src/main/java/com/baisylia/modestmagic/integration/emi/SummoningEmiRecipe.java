@@ -22,6 +22,7 @@ import java.util.List;
 
 public class SummoningEmiRecipe implements EmiRecipe {
 
+    private static final ResourceLocation BACKGROUND = new ResourceLocation("modestmagic", "textures/gui/emi_background.png");
     private final ResourceLocation id;
     private final EmiIngredient base;
     private final List<EmiIngredient> inputs;
@@ -77,18 +78,25 @@ public class SummoningEmiRecipe implements EmiRecipe {
 
     @Override
     public void addWidgets(WidgetHolder widgets) {
+        widgets.addTexture(BACKGROUND, 0, 0, getDisplayWidth(), getDisplayHeight(), 0, 0);
+
         int cx = 35;
         int cy = getDisplayHeight() / 2;
         int radius = inputs.size() > 6 ? 32 : 24;
-
-        widgets.addSlot(base, cx - 9, cy - 9);
 
         // Rotating Pedestal items
         List<EmiIngredient> pedestalItems = inputs.subList(1, inputs.size());
         RotationState state = new RotationState(cx, cy, radius, pedestalItems.size());
 
+        widgets.add(new RotatingLettersWidget(
+                new ResourceLocation("modestmagic", "textures/gui/enchanted_letters.png"),
+                cx, cy, radius + 6
+        ));
+
+        widgets.add(new HoveringSlotWidget(base, cx - 9, cy - 9, 0));
+
         for (int i = 0; i < pedestalItems.size(); i++) {
-            widgets.add(new RotatingSlotWidget(state, pedestalItems.get(i), i));
+            widgets.add(new RotatingSlotWidget(state, pedestalItems.get(i), i + 1));
         }
 
         // Pedestal Count slot

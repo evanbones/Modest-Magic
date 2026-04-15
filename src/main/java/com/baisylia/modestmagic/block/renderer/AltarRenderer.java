@@ -8,6 +8,7 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.block.model.ItemTransforms;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
+import net.minecraft.core.BlockPos;
 import net.minecraft.world.item.ItemStack;
 
 public class AltarRenderer implements BlockEntityRenderer<AltarBlockEntity> {
@@ -21,7 +22,10 @@ public class AltarRenderer implements BlockEntityRenderer<AltarBlockEntity> {
 
         poseStack.pushPose();
 
-        poseStack.translate(0.5, 1.4, 0.5);
+        BlockPos pos = enchantingTable.getBlockPos();
+        float hover = (float) Math.sin((enchantingTable.getLevel().getGameTime() + partialTick) / 10.0F + (pos.getX() + pos.getY() + pos.getZ())) * 0.1F;
+
+        poseStack.translate(0.5D, 1.4D + hover, 0.5D);
 
         float rotation = ((enchantingTable.getLevel().getGameTime() % 360) + partialTick) * 2f;
         poseStack.mulPose(Vector3f.YP.rotationDegrees(rotation));
