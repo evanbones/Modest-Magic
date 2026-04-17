@@ -1,5 +1,6 @@
 package com.baisylia.modestmagic.integration.emi;
 
+import com.baisylia.modestmagic.config.ModestMagicConfig;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import dev.emi.emi.api.widget.Bounds;
@@ -30,7 +31,11 @@ public class RotatingLettersWidget extends Widget {
         RenderSystem.setShaderTexture(0, texture);
         RenderSystem.enableBlend();
 
-        double baseAngle = -((System.currentTimeMillis() % 16000L) / 16000.0) * 360.0;
+        double baseAngle = 0.0;
+
+        if (!ModestMagicConfig.REDUCED_EMI_MOTION.get()) {
+            baseAngle = -((System.currentTimeMillis() % 24000L) / 24000.0) * 360.0;
+        }
 
         for (int i = 0; i < numLetters; i++) {
             double angle = baseAngle + (360.0 / numLetters) * i;

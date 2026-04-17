@@ -1,5 +1,6 @@
 package com.baisylia.modestmagic.integration.emi;
 
+import com.baisylia.modestmagic.config.ModestMagicConfig;
 import com.mojang.blaze3d.vertex.PoseStack;
 import dev.emi.emi.api.stack.EmiIngredient;
 import dev.emi.emi.api.widget.SlotWidget;
@@ -15,7 +16,11 @@ public class HoveringSlotWidget extends SlotWidget {
 
     @Override
     public void render(PoseStack poseStack, int mouseX, int mouseY, float delta) {
-        float hover = (float) Math.sin((System.currentTimeMillis() % 4000L) / 4000.0f * Math.PI * 2 + indexOffset) * 2.0f;
+        float hover = 0f;
+
+        if (!ModestMagicConfig.REDUCED_EMI_MOTION.get()) {
+            hover = (float) Math.sin((System.currentTimeMillis() % 4000L) / 4000.0f * Math.PI * 2 + indexOffset) * 2.0f;
+        }
 
         poseStack.pushPose();
         poseStack.translate(0, hover, 0);
