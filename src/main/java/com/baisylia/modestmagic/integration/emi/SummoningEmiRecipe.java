@@ -166,12 +166,6 @@ public class SummoningEmiRecipe implements EmiRecipe {
                     int entityX = slotX + 9;
                     int entityY = (int) (slotY + 9 + (height * scale) / 2.0f);
 
-                    // fix for Slimes/Magma Cubes
-                    if (living instanceof Slime) {
-                        scale *= 1.5f;
-                        entityY += 2;
-                    }
-
                     PoseStack modelViewStack = RenderSystem.getModelViewStack();
                     modelViewStack.pushPose();
                     modelViewStack.mulPoseMatrix(poseStack.last().pose());
