@@ -118,7 +118,7 @@ public class EnchantingEmiRecipe implements EmiRecipe {
 
     @Override
     public int getDisplayHeight() {
-        return inputs.size() > 6 ? 100 : 80;
+        return 80;
     }
 
     @Override
@@ -127,10 +127,12 @@ public class EnchantingEmiRecipe implements EmiRecipe {
 
         int cx = 35;
         int cy = getDisplayHeight() / 2;
-        int radius = inputs.size() > 6 ? 32 : 24;
+        int radius = 24;
 
-        // Rotating Pedestal items
-        RotationState state = new RotationState(cx, cy, radius, inputs.size());
+        List<EmiIngredient> circleItems = inputs.size() > 6 ? inputs.subList(0, 6) : inputs;
+        List<EmiIngredient> extraItems = inputs.size() > 6 ? inputs.subList(6, inputs.size()) : List.of();
+
+        RotationState state = new RotationState(cx, cy, radius, circleItems.size());
 
         widgets.add(new RotatingLettersWidget(
                 new ResourceLocation("modestmagic", "textures/gui/enchanted_letters.png"),
@@ -139,12 +141,52 @@ public class EnchantingEmiRecipe implements EmiRecipe {
 
         widgets.add(new HoveringSlotWidget(baseIngredient, cx - 9, cy - 9, 0));
 
-        for (int i = 0; i < inputs.size(); i++) {
-            widgets.add(new RotatingSlotWidget(state, inputs.get(i), i + 1));
+        for (int i = 0; i < circleItems.size(); i++) {
+            widgets.add(new RotatingSlotWidget(state, circleItems.get(i), i + 1));
         }
 
         // Pedestal Count slot
         widgets.addSlot(EmiStack.of(new ItemStack(ModBlocks.PEDESTAL.get(), inputs.size())), getDisplayWidth() - 18, getDisplayHeight() - 18).drawBack(true);
+
+        // Extra Ingredients cycling slot
+        if (!extraItems.isEmpty()) {
+            List<EmiIngredient> consolidated = new ArrayList<>();
+
+            for (EmiIngredient ing : extraItems) {
+                boolean found = false;
+                EmiStack firstStack = ing.getEmiStacks().isEmpty() ? null : ing.getEmiStacks().get(0);
+
+                for (EmiIngredient existing : consolidated) {
+                    EmiStack existingFirst = existing.getEmiStacks().isEmpty() ? null : existing.getEmiStacks().get(0);
+
+                    if (firstStack != null && existingFirst != null && firstStack.isEqual(existingFirst)) {
+                        for (EmiStack stack : existing.getEmiStacks()) {
+                            stack.setAmount(stack.getAmount() + 1);
+                        }
+                        found = true;
+                        break;
+                    }
+                }
+
+                if (!found) {
+                    List<EmiStack> copies = new ArrayList<>();
+                    for (EmiStack stack : ing.getEmiStacks()) {
+                        EmiStack copy = stack.copy();
+                        copy.setAmount(1);
+                        copies.add(copy);
+                    }
+                    consolidated.add(EmiIngredient.of(copies));
+                }
+            }
+
+            int startX = 65;
+            int startY = 58;
+            for (int i = 0; i < consolidated.size(); i++) {
+                int xOffset = (i % 3) * 18;
+                int yOffset = (i / 3) * 18;
+                widgets.addSlot(consolidated.get(i), startX + xOffset, startY + yOffset).drawBack(true);
+            }
+        }
 
         // Arrow and cycling enchanted item
         widgets.addTexture(EmiTexture.EMPTY_ARROW, cx + radius + 16, cy - 8);

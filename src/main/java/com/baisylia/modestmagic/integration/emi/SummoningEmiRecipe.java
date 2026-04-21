@@ -15,6 +15,7 @@ import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.monster.Slime;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.ArrayList;
@@ -73,7 +74,7 @@ public class SummoningEmiRecipe implements EmiRecipe {
 
     @Override
     public int getDisplayHeight() {
-        return inputs.size() > 6 ? 100 : 80;
+        return 80;
     }
 
     @Override
@@ -82,11 +83,13 @@ public class SummoningEmiRecipe implements EmiRecipe {
 
         int cx = 35;
         int cy = getDisplayHeight() / 2;
-        int radius = inputs.size() > 6 ? 32 : 24;
+        int radius = 24;
 
-        // Rotating Pedestal items
         List<EmiIngredient> pedestalItems = inputs.subList(1, inputs.size());
-        RotationState state = new RotationState(cx, cy, radius, pedestalItems.size());
+        List<EmiIngredient> circleItems = pedestalItems.size() > 6 ? pedestalItems.subList(0, 6) : pedestalItems;
+        List<EmiIngredient> extraItems = pedestalItems.size() > 6 ? pedestalItems.subList(6, pedestalItems.size()) : List.of();
+
+        RotationState state = new RotationState(cx, cy, radius, circleItems.size());
 
         widgets.add(new RotatingLettersWidget(
                 new ResourceLocation("modestmagic", "textures/gui/enchanted_letters.png"),
@@ -95,12 +98,52 @@ public class SummoningEmiRecipe implements EmiRecipe {
 
         widgets.add(new HoveringSlotWidget(base, cx - 9, cy - 9, 0));
 
-        for (int i = 0; i < pedestalItems.size(); i++) {
-            widgets.add(new RotatingSlotWidget(state, pedestalItems.get(i), i + 1));
+        for (int i = 0; i < circleItems.size(); i++) {
+            widgets.add(new RotatingSlotWidget(state, circleItems.get(i), i + 1));
         }
 
         // Pedestal Count slot
         widgets.addSlot(EmiStack.of(new ItemStack(ModBlocks.PEDESTAL.get(), pedestalItems.size())), getDisplayWidth() - 18, getDisplayHeight() - 18).drawBack(true);
+
+        // Extra Ingredients cycling slot
+        if (!extraItems.isEmpty()) {
+            List<EmiIngredient> consolidated = new ArrayList<>();
+
+            for (EmiIngredient ing : extraItems) {
+                boolean found = false;
+                EmiStack firstStack = ing.getEmiStacks().isEmpty() ? null : ing.getEmiStacks().get(0);
+
+                for (EmiIngredient existing : consolidated) {
+                    EmiStack existingFirst = existing.getEmiStacks().isEmpty() ? null : existing.getEmiStacks().get(0);
+
+                    if (firstStack != null && existingFirst != null && firstStack.isEqual(existingFirst)) {
+                        for (EmiStack stack : existing.getEmiStacks()) {
+                            stack.setAmount(stack.getAmount() + 1);
+                        }
+                        found = true;
+                        break;
+                    }
+                }
+
+                if (!found) {
+                    List<EmiStack> copies = new ArrayList<>();
+                    for (EmiStack stack : ing.getEmiStacks()) {
+                        EmiStack copy = stack.copy();
+                        copy.setAmount(1);
+                        copies.add(copy);
+                    }
+                    consolidated.add(EmiIngredient.of(copies));
+                }
+            }
+
+            int startX = 65;
+            int startY = 58;
+            for (int i = 0; i < consolidated.size(); i++) {
+                int xOffset = (i % 3) * 18;
+                int yOffset = (i / 3) * 18;
+                widgets.addSlot(consolidated.get(i), startX + xOffset, startY + yOffset).drawBack(true);
+            }
+        }
 
         // Arrow
         widgets.addTexture(EmiTexture.EMPTY_ARROW, cx + radius + 16, cy - 8);
@@ -116,13 +159,18 @@ public class SummoningEmiRecipe implements EmiRecipe {
                 if (currentEntity instanceof LivingEntity living) {
                     double width = living.getBbWidth();
                     double height = living.getBbHeight();
-                    double len = (width + width + height) / 3.0;
 
-                    if (len > 1.05) len = (len + Math.sqrt(len)) / 2.0;
-                    float scale = (float) (1.05 / len * 14.0);
+                    float maxDim = (float) Math.max(width, height);
+                    float scale = 16.0f / Math.max(maxDim, 0.5f);
 
                     int entityX = slotX + 9;
-                    int entityY = slotY + 17;
+                    int entityY = (int) (slotY + 9 + (height * scale) / 2.0f);
+
+                    // fix for Slimes/Magma Cubes
+                    if (living instanceof Slime) {
+                        scale *= 1.5f;
+                        entityY += 2;
+                    }
 
                     PoseStack modelViewStack = RenderSystem.getModelViewStack();
                     modelViewStack.pushPose();
