@@ -85,15 +85,12 @@ public class SummoningEmiRecipe implements EmiRecipe {
         int radius = 24;
 
         List<EmiIngredient> pedestalItems = inputs.subList(1, inputs.size());
-        List<EmiIngredient> circleItems = new ArrayList<>();
+        List<EmiIngredient> circleItems;
 
-        int numSlots = Math.min(6, pedestalItems.size());
-        for (int i = 0; i < numSlots; i++) {
-            List<EmiStack> cycleStacks = new ArrayList<>();
-            for (int j = i; j < pedestalItems.size(); j += numSlots) {
-                cycleStacks.addAll(pedestalItems.get(j).getEmiStacks());
-            }
-            circleItems.add(EmiIngredient.of(cycleStacks));
+        if (pedestalItems.size() > 6) {
+            circleItems = ModestMagicEmiPlugin.consolidateItems(pedestalItems);
+        } else {
+            circleItems = pedestalItems;
         }
 
         RotationState state = new RotationState(cx, cy, radius, circleItems.size());
@@ -150,6 +147,6 @@ public class SummoningEmiRecipe implements EmiRecipe {
             }
         });
 
-        widgets.add(new WheelListTooltipWidget(cx, cy, radius, pedestalItems));
+        widgets.add(new WheelListTooltipWidget(cx, cy, radius, circleItems));
     }
 }

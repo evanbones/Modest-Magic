@@ -129,15 +129,12 @@ public class EnchantingEmiRecipe implements EmiRecipe {
         int cy = getDisplayHeight() / 2;
         int radius = 24;
 
-        List<EmiIngredient> circleItems = new ArrayList<>();
+        List<EmiIngredient> circleItems;
 
-        int numSlots = Math.min(6, inputs.size());
-        for (int i = 0; i < numSlots; i++) {
-            List<EmiStack> cycleStacks = new ArrayList<>();
-            for (int j = i; j < inputs.size(); j += numSlots) {
-                cycleStacks.addAll(inputs.get(j).getEmiStacks());
-            }
-            circleItems.add(EmiIngredient.of(cycleStacks));
+        if (inputs.size() > 6) {
+            circleItems = ModestMagicEmiPlugin.consolidateItems(inputs);
+        } else {
+            circleItems = inputs;
         }
 
         RotationState state = new RotationState(cx, cy, radius, circleItems.size());
@@ -160,6 +157,6 @@ public class EnchantingEmiRecipe implements EmiRecipe {
         widgets.addTexture(EmiTexture.EMPTY_ARROW, cx + radius + 16, cy - 8);
         widgets.add(new HoveringSlotWidget(EmiIngredient.of(outputs), cx + radius + 51, cy - 9, 2)).recipeContext(this);
 
-        widgets.add(new WheelListTooltipWidget(cx, cy, radius, inputs));
+        widgets.add(new WheelListTooltipWidget(cx, cy, radius, circleItems));
     }
 }
